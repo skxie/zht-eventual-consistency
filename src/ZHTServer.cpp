@@ -42,9 +42,13 @@ using namespace std;
 #endif
 
 #include "ConfHandler.h"
+#include "ZHTUtil.h"
 using namespace iit::datasys::zht::dm;
 
 void printUsage(char *argv_0);
+int HostIndex(int indexDeff);
+
+struct HostEntity *ReplicaList;
 
 int main(int argc, char **argv) {
 
@@ -56,6 +60,8 @@ int main(int argc, char **argv) {
 	string port_from_conf = Const::StringEmpty;
 	string zhtConf = Const::StringEmpty;
 	string neighborConf = Const::StringEmpty;
+	int replicaNum = 0;
+
 
 	int c;
 	while ((c = getopt(argc, argv, "z:n:p:h")) != -1) {
@@ -94,6 +100,9 @@ int main(int argc, char **argv) {
 			/*get protocol and port*/
 			protocol = ConfHandler::getProtocolFromConf();
 
+			/*get number of replica*/
+			replicaNum = ConfHandler::getReplicaNumFromConf();
+
 			/*get port, port defined interactively overrides that in configure*/
 			port_from_conf = ConfHandler::getPortFromConf();
 
@@ -109,6 +118,30 @@ int main(int argc, char **argv) {
 
 				cout << "zht server: port not defined by user" << endl;
 				exit(1);
+			}
+
+			int indexDeff = (atoi(port.c_str()) - atoi(port_from_conf.c_str()))/2;
+			/*index of this zht server in membership*/
+			int hostIndex = HostIndex(indexDeff);
+			/*Index the host name firstly shown in membership*/
+			int startHostIndex = hostIndex - indexDeff;
+
+			if(hostIndex == -1){
+				cout << "zht server: host name is not in membership" << endl;
+				exit(1);
+			}
+
+			/*build the replica list of this zht server*/
+			if(replicaNum > 1){
+				struct HostEntity replicaTemp[replicaNum - 1];
+				for (int i = 0; i < replicaNum -1; i++){
+					if(startHostIndex != hostIndex){
+						ZHTUtil zu;
+						replicaTemp[i] = zu.getHostEntityByIndex(startHostIndex - replicaNum);
+					}
+					startHostIndex++;
+				}
+				ReplicaList = replicaTemp;
 			}
 
 			/*make sure protocol defined*/
@@ -156,6 +189,34 @@ int main(int argc, char **argv) {
 				e.what());
 	}
 
+}
+
+int HostIndex(int indexDeff) {
+	char hostName[1024];
+	hostName[1023] = '\0';
+	gethostname(hostName, 1023);
+	int listSize = ConfHandler::NeighborVector.size();
+	ConfEntry host;
+	int i = 0;
+	for (i = 0; i < listSize; i++) {
+		host = ConfHandler::NeighborVector.at(i);
+//		cout<<"i = "<<i<<", port= "<< host.port<<endl;
+		if (!strcmp(host.name().c_str(), hostName)) {
+			break;
+		}
+	}
+
+	//	cout<<"my index: "<<i<<endl;
+	if (i == listSize) {
+		return -1;
+	}
+
+	i = i + indexDeff;
+
+	if(i >= listSize)
+		return -1;
+
+	return i;
 }
 
 void printUsage(char *argv_0) {

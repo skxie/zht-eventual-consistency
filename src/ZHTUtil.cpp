@@ -36,6 +36,7 @@
 #include <arpa/inet.h>
 #include <algorithm>
 #include <netdb.h>
+#include <time.h>
 
 #include  "zpack.pb.h"
 
@@ -49,6 +50,7 @@ ZHTUtil::~ZHTUtil() {
 
 HostEntity ZHTUtil::getHostEntityByKey(const string& msg) {
 
+	int numOfReplica = ConfHandler::getReplicaNumFromConf();
 	ZPack zpack;
 	zpack.ParseFromString(msg); //to debug
 
@@ -56,6 +58,19 @@ HostEntity ZHTUtil::getHostEntityByKey(const string& msg) {
 	size_t node_size = ConfHandler::NeighborVector.size();
 	int index = hascode % node_size;
 
+	/*randomly generate the index from all replicas*/
+	srand(time(NULL));
+	index = (index + rand() % numOfReplica) * numOfReplica;
+
+	ConfEntry ce = ConfHandler::NeighborVector.at(index);
+
+	return buildHostEntity(ce.name(), atoi(ce.value().c_str()));
+
+}
+
+HostEntity ZHTUtil::getHostEntityByIndex(const int index){
+
+	HostEntity he;
 	ConfEntry ce = ConfHandler::NeighborVector.at(index);
 
 	return buildHostEntity(ce.name(), atoi(ce.value().c_str()));

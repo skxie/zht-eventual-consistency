@@ -75,6 +75,26 @@ ConfHandler::~ConfHandler() {
 
 }
 
+int ConfHandler::getReplicaNumFromConf() {
+
+	ConfHandler::MAP *zpmap = &ConfHandler::ZHTParameters;
+
+	ConfHandler::MIT it;
+
+	for (it = zpmap->begin(); it != zpmap->end(); it++) {
+
+		ConfEntry ce;
+		ce.assign(it->first);
+
+		if (ce.name() == Const::ZC_NUM_REPLICAS) {
+
+			return atoi(ce.value().c_str());
+		}
+	}
+
+	return -1;
+}
+
 string ConfHandler::getProtocolFromConf() {
 
 	ConfHandler::MAP *zpmap = &ConfHandler::ZHTParameters;

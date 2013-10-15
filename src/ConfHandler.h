@@ -65,6 +65,7 @@ public:
 	static void initConf(string zhtConf, string neighborConf);
 	static string getPortFromConf();
 	static string getProtocolFromConf();
+	static int getReplicaNumFromConf();
 
 private:
 	static void setNeighborSeeds(const string& neighborCfg);
