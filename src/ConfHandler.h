@@ -32,6 +32,7 @@
 #define CONFIGHANDLER_H_
 
 #include "ConfEntry.h"
+#include "ZHTUtil.h"
 
 #include <map>
 #include <vector>
@@ -58,6 +59,10 @@ public:
 	typedef VEC::iterator VIT;
 	typedef VEC::reverse_iterator VRIT;
 
+	typedef vector<HostEntity> VEH;
+	typedef VEH::iterator HIT;
+	typedef VEH::reverse_iterator HRIT;
+
 public:
 	ConfHandler();
 	virtual ~ConfHandler();
@@ -66,6 +71,7 @@ public:
 	static string getPortFromConf();
 	static string getProtocolFromConf();
 	static int getReplicaNumFromConf();
+	static void setReplicaVector(VEH &replicaVector);
 
 private:
 	static void setNeighborSeeds(const string& neighborCfg);
@@ -80,6 +86,7 @@ private:
 
 public:
 	static VEC NeighborVector;
+	static VEH ReplicaVector;
 	static MAP NeighborSeeds;
 	static MAP ZHTParameters;
 	static MAP NodeParameters;

@@ -49,7 +49,7 @@ ZHTUtil::~ZHTUtil() {
 }
 
 HostEntity ZHTUtil::getHostEntityByKey(const string& msg) {
-
+//abc
 	int numOfReplica = ConfHandler::getReplicaNumFromConf();
 	ZPack zpack;
 	zpack.ParseFromString(msg); //to debug
@@ -58,9 +58,12 @@ HostEntity ZHTUtil::getHostEntityByKey(const string& msg) {
 	size_t node_size = ConfHandler::NeighborVector.size();
 	int index = hascode % node_size;
 
-	/*randomly generate the index from all replicas*/
-	srand(time(NULL));
-	index = (index + rand() % numOfReplica) * numOfReplica;
+	if(zpack.opcode() == Const::ZSC_OPC_LOOKUP){
+		/*randomly generate the index from all replicas*/
+		srand(time(NULL));
+		index = (index + rand() % numOfReplica) * numOfReplica;
+		//index = (index + rand() % numOfReplica) * numOfReplica;
+	}
 
 	ConfEntry ce = ConfHandler::NeighborVector.at(index);
 
