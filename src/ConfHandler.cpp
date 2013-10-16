@@ -31,11 +31,13 @@
 #include "ConfHandler.h"
 #include "ConfEntry.h"
 #include "StrTokenizer.h"
+#include "ZHTUtil.h"
 
 #include <stdlib.h>
 #include <string>
 #include <string.h>
 #include <stdio.h>
+#include <sstream>
 
 #include <fstream>
 #include <iostream>
@@ -47,6 +49,7 @@ namespace zht {
 namespace dm {
 
 ConfHandler::VEC ConfHandler::NeighborVector = VEC();
+ConfHandler::VEH ConfHandler::ReplicaVector = VEH();
 ConfHandler::MAP ConfHandler::NeighborSeeds = MAP();
 ConfHandler::MAP ConfHandler::ZHTParameters = MAP();
 ConfHandler::MAP ConfHandler::NodeParameters = MAP();
@@ -212,6 +215,12 @@ void ConfHandler::setNeighborVector(VEC &neighborVector) {
 
 		neighborVector.push_back(kvi->second);
 	}
+}
+
+void ConfHandler::setReplicaVector(VEH &replicaVector){
+	//cout << "size of replica: " << replicaVector.size() << endl;
+	//setReplicaVectorInternal(replica, ReplicaVector);
+	ReplicaVector = replicaVector;
 }
 
 void ConfHandler::pickNodeParameters() {
