@@ -70,9 +70,11 @@ public:
 	static void initConf(string zhtConf, string neighborConf);
 	static string getPortFromConf();
 	static string getProtocolFromConf();
-	static int getReplicaNumFromConf();
-	static void setReplicaVector(VEH &replicaVector);
+	static int32_t getReplicaNumFromConf();
 	static string get_zhtconf_parameter(const string &paraname);
+	static int32_t getNeighborIndexByHostName(const string &hostName);
+	static void setReplicaVector(const string &port);
+	//static void setReplicaVector(VEH &replicaVector);
 
 private:
 	static void setNeighborSeeds(const string& neighborCfg);
@@ -93,6 +95,9 @@ public:
 	static MAP NodeParameters;
 
 public:
+	static int32_t PRIMARY_HOST_INDEX;
+	static int32_t HOST_INDEX_DEFF;
+	static int32_t HOST_INDEX;
 
 public:
 	static string CONF_ZHT;

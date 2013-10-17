@@ -60,8 +60,8 @@ int main(int argc, char **argv) {
 	string zhtConf;
 	string neighborConf;
 	string novohtDbFile;
-    int neighborNum = 0;
-	int replicaNum  = 0;
+	//int32_t neighborNum = 0;
+	//int32_t replicaNum  = 0;
 
 	int c;
 	while ((c = getopt(argc, argv, "z:n:p:f:h")) != -1) {
@@ -106,13 +106,13 @@ int main(int argc, char **argv) {
 			protocol = ConfHandler::getProtocolFromConf();
 
 			/*get number of replica*/
-			replicaNum = ConfHandler::getReplicaNumFromConf();
+			//replicaNum = ConfHandler::getReplicaNumFromConf();
 
 			/*get port, port defined interactively overrides that in configure*/
 			port_from_conf = ConfHandler::getPortFromConf();
 
 			/*get number of neighbors*/
-			neighborNum = ConfHandler::NeighborVector.size();
+			//neighborNum = ConfHandler::NeighborVector.size();
 
 			if (port_from_conf.empty()) {
 
@@ -128,52 +128,54 @@ int main(int argc, char **argv) {
 				exit(1);
 			}
 
-			int indexDeff = (atoi(port.c_str()) - atoi(port_from_conf.c_str()))/2;
-			/*index of this zht server in membership*/
-			int hostIndex = HostIndex(indexDeff);
-			//cout << "host index: " << hostIndex << endl;
-			/*Index the host name firstly shown in membership*/
-			int startHostIndex = hostIndex - indexDeff;
+			ConfHandler::setReplicaVector(port);
 
-			if(hostIndex == -1){
-				cout << "zht server: host name is not in membership" << endl;
-				exit(1);
-			}
-
-			/*build the replica list of this zht server*/
-			if(replicaNum > 0){
-				vector<HostEntity> replicaTemp = vector<HostEntity>();
-				int index = 0;
-				for (int i = 0; i <= replicaNum; i++){
-					if(startHostIndex < hostIndex){
-						ZHTUtil zu;
-						int replicaIndex = (startHostIndex - (hostIndex - startHostIndex) * (replicaNum + 1))
-								% neighborNum + neighborNum;
-//						cout << "<" << replicaIndex << endl;
-						replicaTemp.push_back(zu.getHostEntityByIndex(replicaIndex));
-						index++;
-					}
-					if(startHostIndex > hostIndex){
-						ZHTUtil zu;
-						int replicaIndex = (startHostIndex + (startHostIndex - hostIndex) * (replicaNum + 1))
-								% neighborNum;
-//						cout << ">" << replicaIndex << endl;
-						replicaTemp.push_back(zu.getHostEntityByIndex(replicaIndex));
-						index++;
-					}
-					startHostIndex++;
-				}
-				ConfHandler::setReplicaVector(replicaTemp);
-
-
-				/*test the correctness of replica vector*/
-				/*ConfHandler::VEH *replicaVector = &ConfHandler::ReplicaVector;
-				ConfHandler::HIT hit;
-				for(hit = replicaVector->begin(); hit != replicaVector->end(); hit++){
-					cout << "host name: " << (*hit).host << "    port: " << (*hit).port << endl;
-				}
-				*/
-			}
+//			int indexDeff = (atoi(port.c_str()) - atoi(port_from_conf.c_str()))/2;
+//			/*index of this zht server in membership*/
+//			int hostIndex = HostIndex(indexDeff);
+//			//cout << "host index: " << hostIndex << endl;
+//			/*Index the host name firstly shown in membership*/
+//			int startHostIndex = hostIndex - indexDeff;
+//
+//			if(hostIndex == -1){
+//				cout << "zht server: host name is not in membership" << endl;
+//				exit(1);
+//			}
+//
+//			/*build the replica list of this zht server*/
+//			if(replicaNum > 0){
+//				vector<HostEntity> replicaTemp = vector<HostEntity>();
+//				int index = 0;
+//				for (int i = 0; i <= replicaNum; i++){
+//					if(startHostIndex < hostIndex){
+//						ZHTUtil zu;
+//						int replicaIndex = (startHostIndex - (hostIndex - startHostIndex) * (replicaNum + 1))
+//								% neighborNum + neighborNum;
+////						cout << "<" << replicaIndex << endl;
+//						replicaTemp.push_back(zu.getHostEntityByIndex(replicaIndex));
+//						index++;
+//					}
+//					if(startHostIndex > hostIndex){
+//						ZHTUtil zu;
+//						int replicaIndex = (startHostIndex + (startHostIndex - hostIndex) * (replicaNum + 1))
+//								% neighborNum;
+////						cout << ">" << replicaIndex << endl;
+//						replicaTemp.push_back(zu.getHostEntityByIndex(replicaIndex));
+//						index++;
+//					}
+//					startHostIndex++;
+//				}
+//				ConfHandler::setReplicaVector(replicaTemp);
+//
+//
+//				/*test the correctness of replica vector*/
+//				/*ConfHandler::VEH *replicaVector = &ConfHandler::ReplicaVector;
+//				ConfHandler::HIT hit;
+//				for(hit = replicaVector->begin(); hit != replicaVector->end(); hit++){
+//					cout << "host name: " << (*hit).host << "    port: " << (*hit).port << endl;
+//				}
+//				*/
+//			}
 
 			/*make sure protocol defined*/
 			if (protocol.empty()) {
@@ -222,38 +224,38 @@ int main(int argc, char **argv) {
 
 }
 
-int HostIndex(int indexDeff) {
-	char hostName[1024];
-	gethostname(hostName, 1023);
-	int listSize = ConfHandler::NeighborVector.size();
-//	cout << "neighbor vector size: " << listSize << endl;
-	ConfEntry host;
-	int i = 0;
-	for (i = 0; i < listSize; i++) {
-		host = ConfHandler::NeighborVector.at(i);
-	//	cout<<"i = "<<i<<endl;
-	//	cout << "host name: " << host.name() << " host port: " << host.value() << endl;
-		if (!strcmp(host.name().c_str(), hostName)) {
-			break;
-		}
-	}
-
-	//	cout<<"my index: "<<i<<endl;
-	//	cout << "neighbor vector size: " << listSize << endl;
-	if (i == listSize) {
-		return -1;
-	}
-
-	i += indexDeff;
-	//	cout<<"my index: "<<i<<endl;
-
-	if(i >= listSize){
-		return -1;
-	}
-	//	cout<<"my index: "<<i<<endl;
-
-	return i;
-}
+//int HostIndex(int indexDeff) {
+//	char hostName[1024];
+//	gethostname(hostName, 1023);
+//	int listSize = ConfHandler::NeighborVector.size();
+////	cout << "neighbor vector size: " << listSize << endl;
+//	ConfEntry host;
+//	int i = 0;
+//	for (i = 0; i < listSize; i++) {
+//		host = ConfHandler::NeighborVector.at(i);
+//	//	cout<<"i = "<<i<<endl;
+//	//	cout << "host name: " << host.name() << " host port: " << host.value() << endl;
+//		if (!strcmp(host.name().c_str(), hostName)) {
+//			break;
+//		}
+//	}
+//
+//	//	cout<<"my index: "<<i<<endl;
+//	//	cout << "neighbor vector size: " << listSize << endl;
+//	if (i == listSize) {
+//		return -1;
+//	}
+//
+//	i += indexDeff;
+//	//	cout<<"my index: "<<i<<endl;
+//
+//	if(i >= listSize){
+//		return -1;
+//	}
+//	//	cout<<"my index: "<<i<<endl;
+//
+//	return i;
+//}
 
 void printUsage(char *argv_0) {
 

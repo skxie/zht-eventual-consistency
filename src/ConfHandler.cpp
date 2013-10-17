@@ -61,6 +61,10 @@ string ConfHandler::CONF_NODE = "node.conf";
 string ConfHandler::CONF_NEIGHBOR = "neighbor.conf";
 string ConfHandler::NOVOHT_FILE = "";
 
+//int32_t ConfHandler::PRIMARY_HOST_INDEX = 0;
+//int32_t ConfHandler::HOST_INDEX_DEFF = 0;
+//int32_t ConfHandler::HOST_INDEX = 0;
+
 uint ConfHandler::ZC_MAX_ZHT = 0;
 uint ConfHandler::ZC_NUM_REPLICAS = 0;
 uint ConfHandler::ZC_REPLICATION_TYPE = 0;
@@ -81,24 +85,28 @@ ConfHandler::~ConfHandler() {
 
 }
 
-int ConfHandler::getReplicaNumFromConf() {
+//int ConfHandler::getReplicaNumFromConf() {
+//
+//	ConfHandler::MAP *zpmap = &ConfHandler::ZHTParameters;
+//
+//	ConfHandler::MIT it;
+//
+//	for (it = zpmap->begin(); it != zpmap->end(); it++) {
+//
+//		ConfEntry ce;
+//		ce.assign(it->first);
+//
+//		if (ce.name() == Const::ZC_NUM_REPLICAS) {
+//
+//			return atoi(ce.value().c_str());
+//		}
+//	}
+//
+//	return -1;
+//}
 
-	ConfHandler::MAP *zpmap = &ConfHandler::ZHTParameters;
-
-	ConfHandler::MIT it;
-
-	for (it = zpmap->begin(); it != zpmap->end(); it++) {
-
-		ConfEntry ce;
-		ce.assign(it->first);
-
-		if (ce.name() == Const::ZC_NUM_REPLICAS) {
-
-			return atoi(ce.value().c_str());
-		}
-	}
-
-	return -1;
+int32_t ConfHandler::getReplicaNumFromConf() {
+	return ConfHandler::ZC_NUM_REPLICAS;
 }
 
 string ConfHandler::getProtocolFromConf() {
@@ -218,11 +226,52 @@ void ConfHandler::setNeighborVector(VEC &neighborVector) {
 	}
 }
 
-void ConfHandler::setReplicaVector(VEH &replicaVector){
-	//cout << "size of replica: " << replicaVector.size() << endl;
-	//setReplicaVectorInternal(replica, ReplicaVector);
-	ReplicaVector = replicaVector;
+int32_t ConfHandler::getNeighborIndexByHostName(const string &hostName) {
+
+	ConfHandler::VIT kvi;
+	ConfHandler::VEC* neighbors = &ConfHandler::NeighborVector;
+
+	for (kvi = neighbors->begin(); kvi != neighbors->end(); kvi++) {
+		if (kvi->name() == hostName) {
+			return kvi - neighbors->begin();
+		}
+	}
+	return -1;
 }
+
+void ConfHandler::setReplicaVector(const string &port) {
+
+	char host_name[1024];
+	gethostname(host_name, 1023);
+	const string hostName(host_name);
+
+	ConfHandler::VEC* neighbors = &ConfHandler::NeighborVector;
+
+	int32_t index = getNeighborIndexByHostName(hostName);
+
+	if (index != -1) {
+		ZHTUtil zu;
+		while (index < neighbors->size() && neighbors->at(index).name() == hostName) {
+			if (neighbors->at(index).value() != port) {
+				ReplicaVector.push_back(zu.getHostEntityByIndex(index));
+			}
+			index++;
+		}
+		if (ReplicaVector.size() != ConfHandler::ZC_NUM_REPLICAS) {
+			cout << "The number of replicas is different from that in the configure file." << endl;
+			exit(1);
+		}
+	} else {
+		cout << "zht server: host name is not in membership" << endl;
+		exit(1);
+	}
+}
+
+//void ConfHandler::setReplicaVector(VEH &replicaVector){
+//	//cout << "size of replica: " << replicaVector.size() << endl;
+//	//setReplicaVectorInternal(replica, ReplicaVector);
+//	ReplicaVector = replicaVector;
+//}
 
 void ConfHandler::pickNodeParameters() {
 
