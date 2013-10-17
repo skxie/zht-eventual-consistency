@@ -72,6 +72,7 @@ public:
 	static string getProtocolFromConf();
 	static int getReplicaNumFromConf();
 	static void setReplicaVector(VEH &replicaVector);
+	static string get_zhtconf_parameter(const string &paraname);
 
 private:
 	static void setNeighborSeeds(const string& neighborCfg);
@@ -92,9 +93,12 @@ public:
 	static MAP NodeParameters;
 
 public:
+
+public:
 	static string CONF_ZHT;
 	static string CONF_NODE;
 	static string CONF_NEIGHBOR;
+	static string NOVOHT_FILE;
 
 public:
 	static string NC_FILECLIENT_PATH;
@@ -107,6 +111,9 @@ public:
 	static uint NC_ZHT_CAPACITY;
 	static string ZC_HTDATA_PATH;
 	static uint ZC_MIGSLP_TIME;
+
+private:
+	static bool BEEN_INIT;
 };
 
 } /* namespace dm */

@@ -35,6 +35,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <map>
+#include <pthread.h>
 using namespace std;
 
 /*
@@ -57,20 +58,29 @@ public:
 
 protected:
 	virtual int getSockCached(const string& host, const uint& port);
-	virtual sockaddr_in getAddrCached(const string& host, const uint& port);
 	virtual int makeClientSocket(const string& host, const uint& port);
-	virtual sockaddr_in makeClientAddr(const string& host, const uint& port);
 	virtual int recvFrom(int sock, void* recvbuf);
 	virtual int loopedrecv(int sock, string &srecv);
+
+	virtual sockaddr_in getAddrCached(const string& host, const uint& port);
+	virtual sockaddr_in makeClientAddr(const string& host, const uint& port);
 
 private:
 	int sendTo(int sock, const string &host, uint port, const void* sendbuf,
 			int sendcount);
 
 private:
-	static int UDP_SOCKET;
-	static SMAP SOCK_CACHE;
-	static AMAP ADDR_CACHE;
+	static void init_AC_MUTEX();
+
+private:
+	static bool INIT_AC_MUTEX;
+	static pthread_mutex_t AC_MUTEX; //mutex for address cache
+
+private:
+	//static SMAP SOCK_CACHE;
+	//static AMAP ADDR_CACHE;
+	SMAP SOCK_CACHE;
+	AMAP ADDR_CACHE;
 };
 
 class UDPStub: public IPProtoStub {
@@ -80,8 +90,9 @@ public:
 
 	virtual bool recvsend(ProtoAddr addr, const void *recvbuf);
 
-protected:
-	virtual int sendBack(ProtoAddr addr, const void* sendbuf, int sendcount);
+public:
+	virtual int sendBack(ProtoAddr addr, const void* sendbuf,
+			int sendcount) const;
 
 };
 

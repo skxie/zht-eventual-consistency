@@ -48,6 +48,8 @@ namespace datasys {
 namespace zht {
 namespace dm {
 
+bool ConfHandler::BEEN_INIT = false;
+
 ConfHandler::VEC ConfHandler::NeighborVector = VEC();
 ConfHandler::VEH ConfHandler::ReplicaVector = VEH();
 ConfHandler::MAP ConfHandler::NeighborSeeds = MAP();
@@ -57,6 +59,7 @@ ConfHandler::MAP ConfHandler::NodeParameters = MAP();
 string ConfHandler::CONF_ZHT = "zht.conf";
 string ConfHandler::CONF_NODE = "node.conf";
 string ConfHandler::CONF_NEIGHBOR = "neighbor.conf";
+string ConfHandler::NOVOHT_FILE = "";
 
 uint ConfHandler::ZC_MAX_ZHT = 0;
 uint ConfHandler::ZC_NUM_REPLICAS = 0;
@@ -100,26 +103,17 @@ int ConfHandler::getReplicaNumFromConf() {
 
 string ConfHandler::getProtocolFromConf() {
 
-	ConfHandler::MAP *zpmap = &ConfHandler::ZHTParameters;
-
-	ConfHandler::MIT it;
-
-	for (it = zpmap->begin(); it != zpmap->end(); it++) {
-
-		ConfEntry ce;
-		ce.assign(it->first);
-
-		if (ce.name() == Const::PROTO_NAME) {
-
-			return ce.value();
-		}
-	}
-
-	return "";
+	return get_zhtconf_parameter(Const::PROTO_NAME);
 }
 
 string ConfHandler::getPortFromConf() {
 
+	return get_zhtconf_parameter(Const::PROTO_PORT);
+}
+
+string ConfHandler::get_zhtconf_parameter(const string &paraname) {
+
+	string result;
 	ConfHandler::MAP *zpmap = &ConfHandler::ZHTParameters;
 
 	ConfHandler::MIT it;
@@ -129,22 +123,29 @@ string ConfHandler::getPortFromConf() {
 		ConfEntry ce;
 		ce.assign(it->first);
 
-		if (ce.name() == Const::PROTO_PORT) {
+		if (ce.name() == paraname) {
 
-			return ce.value();
+			result = ce.value();
+
+			break;
 		}
 	}
 
-	return "";
+	return result;
 }
 
 void ConfHandler::initConf(string zhtConf, string neighborConf) {
 
-	ConfHandler::CONF_ZHT = zhtConf; //zht.conf
-	ConfHandler::CONF_NEIGHBOR = neighborConf; //neighbor.conf
+	if (!BEEN_INIT) {
 
-	ConfHandler::setZHTParameters(zhtConf);
-	ConfHandler::setNeighborSeeds(neighborConf);
+		ConfHandler::CONF_ZHT = zhtConf; //zht.conf
+		ConfHandler::CONF_NEIGHBOR = neighborConf; //neighbor.conf
+
+		ConfHandler::setZHTParameters(zhtConf);
+		ConfHandler::setNeighborSeeds(neighborConf);
+
+		BEEN_INIT = true;
+	}
 }
 
 void ConfHandler::setNeighborSeeds(const string& neighborCfg) {
