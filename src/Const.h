@@ -192,6 +192,8 @@ public:
 	static const string ZSC_REC_UOPC; //unrecognized operation code
 	static const string ZSC_REC_UNPR; //unprocessed
 	static const string ZSC_REC_SUCC; //succeeded
+	static const string ZSC_REP_ORIG; //the message sent from client
+	static const string ZSC_REP_PRIM; //the message sent from primary instance
 
 	static const int ZSI_OPC_LOOKUP; //lookup item
 	static const int ZSI_OPC_REMOVE; //remove item
@@ -222,6 +224,8 @@ public:
 	static const int ZSI_REC_UOPC; //unrecognized operation code
 	static const int ZSI_REC_UNPR; //unprocessed
 	static const int ZSI_REC_SUCC; //succeeded
+	static const int ZSI_REP_ORIG; //the message sent from client
+	static const int ZSI_REP_PRIM; //the message sent from primary instance
 
 };
 

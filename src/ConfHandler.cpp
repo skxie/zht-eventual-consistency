@@ -243,7 +243,7 @@ void ConfHandler::setReplicaVector(const string &port) {
 
 	char host_name[1024];
 	gethostname(host_name, 1023);
-	const string hostName(host_name);
+	string hostName(host_name);
 
 	ConfHandler::VEC* neighbors = &ConfHandler::NeighborVector;
 

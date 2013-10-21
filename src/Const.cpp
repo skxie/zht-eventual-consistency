@@ -126,6 +126,8 @@ const string Const::ZSC_REC_SECDTRY = "-97";
 const string Const::ZSC_REC_UOPC = "-98";
 const string Const::ZSC_REC_UNPR = "-99";
 const string Const::ZSC_REC_SUCC = "000";
+const string Const::ZSC_REP_ORIG = "3";
+const string Const::ZSC_REP_PRIM = "5";
 
 const int Const::ZSI_OPC_LOOKUP = 1;
 const int Const::ZSI_OPC_REMOVE = 2;
@@ -156,6 +158,8 @@ const int Const::ZSI_REC_SECDTRY = -97;
 const int Const::ZSI_REC_UOPC = -98;
 const int Const::ZSI_REC_UNPR = -99;
 const int Const::ZSI_REC_SUCC = 0;
+const int Const::ZSI_REP_ORIG = 3;
+const int Const::ZSI_REP_PRIM = 5;
 
 Const::Const() {
 }

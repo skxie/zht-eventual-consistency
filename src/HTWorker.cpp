@@ -112,6 +112,15 @@ string HTWorker::run(const char *buf) {
 		result = Const::ZSC_REC_UOPC;
 	}
 
+	if (ConfHandler::ZC_NUM_REPLICAS != 0 && zpack.replicanum() == Const::ZSI_REP_ORIG) {
+
+		if (zpack.opcode() == Const::ZSC_OPC_INSERT) {
+
+		} else if (zpack.opcode() == Const::ZSC_OPC_REMOVE) {
+
+		}
+	}
+
 	return result;
 }
 
