@@ -47,7 +47,6 @@ using namespace std;
 using namespace iit::datasys::zht::dm;
 
 void printUsage(char *argv_0);
-int HostIndex(int indexDeff);
 
 int main(int argc, char **argv) {
 
@@ -61,6 +60,7 @@ int main(int argc, char **argv) {
 	string neighborConf = Const::StringEmpty;
 	int neighborNum = 0;
 	int replicaNum = 0;
+	int portDiff = 0;
 
 
 	int c;
@@ -103,6 +103,9 @@ int main(int argc, char **argv) {
 			/*get number of replica*/
 			replicaNum = ConfHandler::getReplicaNumFromConf();
 
+			/*get the differential of port*/
+			portDiff = ConfHandler::getPortDiffFromConf();
+
 			/*get port, port defined interactively overrides that in configure*/
 			port_from_conf = ConfHandler::getPortFromConf();
 
@@ -123,51 +126,18 @@ int main(int argc, char **argv) {
 				exit(1);
 			}
 
-			int indexDeff = (atoi(port.c_str()) - atoi(port_from_conf.c_str()))/2;
-			/*index of this zht server in membership*/
-			int hostIndex = HostIndex(indexDeff);
-			//cout << "host index: " << hostIndex << endl;
-			/*Index the host name firstly shown in membership*/
-			int startHostIndex = hostIndex - indexDeff;
+			int indexDiff = (atoi(port.c_str()) - atoi(port_from_conf.c_str())) / portDiff;
 
-			if(hostIndex == -1){
-				cout << "zht server: host name is not in membership" << endl;
-				exit(1);
-			}
+			/*build replica list for current server*/
+			ConfHandler::setReplicaVector(replicaNum, neighborNum, indexDiff, portDiff);
 
-			/*build the replica list of this zht server*/
-			if(replicaNum > 0){
-				vector<HostEntity> replicaTemp = vector<HostEntity>();
-				int index = 0;
-				for (int i = 0; i <= replicaNum; i++){
-					if(startHostIndex < hostIndex){
-						ZHTUtil zu;
-						int replicaIndex = (startHostIndex - (hostIndex - startHostIndex) * (replicaNum + 1))
-								% neighborNum + neighborNum;
-//						cout << "<" << replicaIndex << endl;
-						replicaTemp.push_back(zu.getHostEntityByIndex(replicaIndex));
-						index++;
-					}
-					if(startHostIndex > hostIndex){
-						ZHTUtil zu;
-						int replicaIndex = (startHostIndex + (startHostIndex - hostIndex) * (replicaNum + 1))
-								% neighborNum;
-//						cout << ">" << replicaIndex << endl;
-						replicaTemp.push_back(zu.getHostEntityByIndex(replicaIndex));
-						index++;
-					}
-					startHostIndex++;
-				}
-				ConfHandler::setReplicaVector(replicaTemp);
+			/*test the correctness of replica vector, you can comment it out*/
+			ConfHandler::VEH *replicaVector = &ConfHandler::ReplicaVector;
+			cout << replicaVector->size() << endl;
+			ConfHandler::HIT hit;
+			for(hit = replicaVector->begin(); hit != replicaVector->end(); hit++){
+				cout << "host name: " << (*hit).host << "    port: " << (*hit).port << endl;
 
-
-				/*test the correctness of replica vector*/
-				/*ConfHandler::VEH *replicaVector = &ConfHandler::ReplicaVector;
-				ConfHandler::HIT hit;
-				for(hit = replicaVector->begin(); hit != replicaVector->end(); hit++){
-					cout << "host name: " << (*hit).host << "    port: " << (*hit).port << endl;
-				}
-				*/
 			}
 
 			/*make sure protocol defined*/
@@ -215,39 +185,6 @@ int main(int argc, char **argv) {
 				e.what());
 	}
 
-}
-
-int HostIndex(int indexDeff) {
-	char hostName[1024];
-	gethostname(hostName, 1023);
-	int listSize = ConfHandler::NeighborVector.size();
-//	cout << "neighbor vector size: " << listSize << endl;
-	ConfEntry host;
-	int i = 0;
-	for (i = 0; i < listSize; i++) {
-		host = ConfHandler::NeighborVector.at(i);
-	//	cout<<"i = "<<i<<endl;
-	//	cout << "host name: " << host.name() << " host port: " << host.value() << endl;
-		if (!strcmp(host.name().c_str(), hostName)) {
-			break;
-		}
-	}
-
-	//	cout<<"my index: "<<i<<endl;
-	//	cout << "neighbor vector size: " << listSize << endl;
-	if (i == listSize) {
-		return -1;
-	}
-
-	i += indexDeff;
-	//	cout<<"my index: "<<i<<endl;
-
-	if(i >= listSize){
-		return -1;
-	}
-	//	cout<<"my index: "<<i<<endl;
-
-	return i;
 }
 
 void printUsage(char *argv_0) {

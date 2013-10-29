@@ -49,10 +49,11 @@ ZHTUtil::~ZHTUtil() {
 }
 
 HostEntity ZHTUtil::getHostEntityByKey(const string& msg) {
-//abc
+
 	int numOfReplica = ConfHandler::getReplicaNumFromConf();
 	ZPack zpack;
 	zpack.ParseFromString(msg); //to debug
+	int replicaNum;
 
 	uint64_t hascode = HashUtil::genHash(zpack.key());
 	size_t node_size = ConfHandler::NeighborVector.size();
@@ -61,8 +62,11 @@ HostEntity ZHTUtil::getHostEntityByKey(const string& msg) {
 	if(zpack.opcode() == Const::ZSC_OPC_LOOKUP){
 		/*randomly generate the index from all replicas*/
 		srand(time(NULL));
-		index = (index + rand() % numOfReplica) * numOfReplica;
-		//index = (index + rand() % numOfReplica) * numOfReplica;
+		replicaNum = rand() % numOfReplica;
+		index = (index + replicaNum) % (numOfReplica + 1);
+		int portDiff = ConfHandler::getPortDiffFromConf();
+		ConfEntry ce = ConfHandler::NeighborVector.at(index);
+		return buildHostEntity(ce.name(), atoi(ce.value().c_str())+ replicaNum * portDiff);
 	}
 
 	ConfEntry ce = ConfHandler::NeighborVector.at(index);
@@ -71,13 +75,11 @@ HostEntity ZHTUtil::getHostEntityByKey(const string& msg) {
 
 }
 
-HostEntity ZHTUtil::getHostEntityByIndex(const int index){
+HostEntity ZHTUtil::builtReplicaEntity (const uint& hostIndex, const uint& port){
 
-	HostEntity he;
-	ConfEntry ce = ConfHandler::NeighborVector.at(index);
+	ConfEntry ce = ConfHandler::NeighborVector.at(hostIndex);
 
-	return buildHostEntity(ce.name(), atoi(ce.value().c_str()));
-
+	return buildHostEntity(ce.name(), atoi(ce.value().c_str()) + port);
 }
 
 HostEntity ZHTUtil::buildHostEntity(const string& host, const uint& port) {

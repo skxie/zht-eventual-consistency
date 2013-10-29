@@ -71,7 +71,9 @@ public:
 	static string getPortFromConf();
 	static string getProtocolFromConf();
 	static int getReplicaNumFromConf();
-	static void setReplicaVector(VEH &replicaVector);
+	static int getPortDiffFromConf();
+	static void setReplicaVector(const int replicaNum, const int neighborNum, const int indexDiff, const int portDiff);
+	static int getServerHostIndex();
 
 private:
 	static void setNeighborSeeds(const string& neighborCfg);
@@ -83,6 +85,7 @@ private:
 	static void pickZHTParameters();
 
 	static void setParametersInternal(string configFile, MAP& configMap);
+	static void setReplicaVectorInternal(int replicaNum, int neighborNum, int indexDiff, int portDiff, VEH &replicaVector);
 
 public:
 	static VEC NeighborVector;

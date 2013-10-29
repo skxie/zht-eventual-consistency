@@ -88,6 +88,7 @@ public:
 	 */
 	static const string ZC_MAX_ZHT;
 	static const string ZC_NUM_REPLICAS;
+	static const string ZC_PORT_DIFFERENTIAL;
 	static const string ZC_REPLICATION_TYPE;
 	static const string ZC_HTDATA_PATH;
 	static const string ZC_MIGSLP_TIME;

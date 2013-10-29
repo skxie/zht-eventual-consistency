@@ -78,6 +78,27 @@ ConfHandler::~ConfHandler() {
 
 }
 
+int ConfHandler::getPortDiffFromConf(){
+
+	ConfHandler::MAP *zpmap = &ConfHandler::ZHTParameters;
+
+	ConfHandler::MIT it;
+
+	for (it = zpmap->begin(); it != zpmap->end(); it++) {
+
+		ConfEntry ce;
+		ce.assign(it->first);
+
+		if (ce.name() == Const::ZC_PORT_DIFFERENTIAL) {
+
+			return atoi(ce.value().c_str());
+		}
+	}
+
+	return -1;
+
+}
+
 int ConfHandler::getReplicaNumFromConf() {
 
 	ConfHandler::MAP *zpmap = &ConfHandler::ZHTParameters;
@@ -217,10 +238,31 @@ void ConfHandler::setNeighborVector(VEC &neighborVector) {
 	}
 }
 
-void ConfHandler::setReplicaVector(VEH &replicaVector){
-	//cout << "size of replica: " << replicaVector.size() << endl;
-	//setReplicaVectorInternal(replica, ReplicaVector);
-	ReplicaVector = replicaVector;
+void ConfHandler::setReplicaVector(const int replicaNum, const int neighborNum, const int indexDiff, const int portDiff){
+	setReplicaVectorInternal(replicaNum, neighborNum, indexDiff, portDiff, ReplicaVector);
+}
+
+void ConfHandler::setReplicaVectorInternal(int replicaNum, int neighborNum, int indexDiff, int portDiff, VEH &replicVector){
+
+	int hostIndex = ConfHandler::getServerHostIndex();
+	int primaryHostIndex, replicaHostIndex;
+
+	if(hostIndex == -1){
+		cout << "zht server: host name is not in membership" << endl;
+		exit(1);
+	}
+
+	/*build the replica list of this zht server*/
+	if(replicaNum > 0){
+		primaryHostIndex = ((hostIndex - indexDiff) + neighborNum) % neighborNum;
+		for (int i = 0; i <= replicaNum; i++){
+			replicaHostIndex = (primaryHostIndex + i) % neighborNum;
+			if (replicaHostIndex != hostIndex){
+				ZHTUtil zu;
+				replicVector.push_back(zu.builtReplicaEntity(replicaHostIndex, portDiff * i));
+			}
+		}
+	}
 }
 
 void ConfHandler::pickNodeParameters() {
@@ -289,6 +331,31 @@ void ConfHandler::pickZHTParameters() {
 
 		}
 	}
+}
+
+int ConfHandler::getServerHostIndex() {
+	char hostName[1024];
+	gethostname(hostName, 1023);
+	int listSize = ConfHandler::NeighborVector.size();
+//	cout << "neighbor vector size: " << listSize << endl;
+	ConfEntry host;
+	int i = 0;
+	for (i = 0; i < listSize; i++) {
+		host = ConfHandler::NeighborVector.at(i);
+	//	cout<<"i = "<<i<<endl;
+	//	cout << "host name: " << host.name() << " host port: " << host.value() << endl;
+		if (!strcmp(host.name().c_str(), hostName)) {
+			break;
+		}
+	}
+
+	//	cout<<"my index: "<<i<<endl;
+	//	cout << "neighbor vector size: " << listSize << endl;
+	if (i == listSize) {
+		return -1;
+	}
+
+	return i;
 }
 
 } /* namespace dm */

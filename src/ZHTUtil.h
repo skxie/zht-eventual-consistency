@@ -56,7 +56,7 @@ public:
 	virtual ~ZHTUtil();
 
 	HostEntity getHostEntityByKey(const string& msg);
-	HostEntity getHostEntityByIndex(const int index);
+	HostEntity builtReplicaEntity (const uint& hostIndex, const uint& port);
 
 private:
 	HostEntity buildHostEntity(const string& host, const uint& port);
