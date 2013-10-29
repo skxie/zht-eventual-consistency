@@ -32,14 +32,39 @@
 
 #include "cpp_zhtclient.h"
 #include "meta.pb.h"
+#include "lock_guard.h"
 
 #include <string.h>
 #include <stdio.h>
 
 using namespace std;
 
+#ifdef IND_MUTEX
+pthread_mutex_t c_zht_lookup_mutex;
+pthread_mutex_t c_zht_remove_mutex;
+pthread_mutex_t c_zht_insert_mutex;
+pthread_mutex_t c_zht_append_mutex;
+pthread_mutex_t c_zht_compare_swap_mutex;
+pthread_mutex_t c_state_change_callback_mutex;
+#elif SHARED_MUTEX
+pthread_mutex_t c_zht_client_mutex;
+#else
+#endif
+
 int c_zht_init_std(ZHTClient_c *zhtClient, const char *zhtConfig,
 		const char *neighborConf) {
+
+#ifdef IND_MUTEX
+	pthread_mutex_init(&c_zht_lookup_mutex, NULL);
+	pthread_mutex_init(&c_zht_remove_mutex, NULL);
+	pthread_mutex_init(&c_zht_insert_mutex, NULL);
+	pthread_mutex_init(&c_zht_append_mutex, NULL);
+	pthread_mutex_init(&c_zht_compare_swap_mutex, NULL);
+	pthread_mutex_init(&c_state_change_callback_mutex, NULL);
+#elif SHARED_MUTEX
+	pthread_mutex_init(&c_zht_client_mutex, NULL);
+#else
+#endif
 
 	ZHTClient *zhtcppClient = new ZHTClient();
 
@@ -59,6 +84,13 @@ int c_zht_init_std(ZHTClient_c *zhtClient, const char *zhtConfig,
 
 int c_zht_lookup_std(ZHTClient_c zhtClient, const char *key, char *result) {
 
+#ifdef IND_MUTEX
+	lock_guard lock(&c_zht_lookup_mutex);
+#elif SHARED_MUTEX
+	lock_guard lock(&c_zht_client_mutex);
+#else
+#endif
+
 	ZHTClient *zhtcppClient = (ZHTClient *) zhtClient;
 
 	string skey(key);
@@ -66,12 +98,21 @@ int c_zht_lookup_std(ZHTClient_c zhtClient, const char *key, char *result) {
 	string resultStr;
 	int ret = zhtcppClient->lookup(skey, resultStr);
 
+	memset(result, 0, strlen(result));
+
 	strncpy(result, resultStr.c_str(), resultStr.size());
 
 	return ret;
 }
 
 int c_zht_remove_std(ZHTClient_c zhtClient, const char *key) {
+
+#ifdef IND_MUTEX
+	lock_guard lock(&c_zht_remove_mutex);
+#elif SHARED_MUTEX
+	lock_guard lock(&c_zht_client_mutex);
+#else
+#endif
 
 	ZHTClient * zhtcppClient = (ZHTClient *) zhtClient;
 
@@ -83,6 +124,13 @@ int c_zht_remove_std(ZHTClient_c zhtClient, const char *key) {
 int c_zht_insert_std(ZHTClient_c zhtClient, const char *key,
 		const char *value) {
 
+#ifdef IND_MUTEX
+	lock_guard lock(&c_zht_insert_mutex);
+#elif SHARED_MUTEX
+	lock_guard lock(&c_zht_client_mutex);
+#else
+#endif
+
 	ZHTClient * zhtcppClient = (ZHTClient *) zhtClient;
 
 	string skey(key);
@@ -93,6 +141,13 @@ int c_zht_insert_std(ZHTClient_c zhtClient, const char *key,
 
 int c_zht_append_std(ZHTClient_c zhtClient, const char *key,
 		const char *value) {
+
+#ifdef IND_MUTEX
+	lock_guard lock(&c_zht_append_mutex);
+#elif SHARED_MUTEX
+	lock_guard lock(&c_zht_client_mutex);
+#else
+#endif
 
 	ZHTClient * zhtcppClient = (ZHTClient *) zhtClient;
 
@@ -106,6 +161,13 @@ int c_zht_append_std(ZHTClient_c zhtClient, const char *key,
 int c_zht_compare_swap_std(ZHTClient_c zhtClient, const char *key,
 		const char *seen_value, const char *new_value, char *value_queried) {
 
+#ifdef IND_MUTEX
+	lock_guard lock(&c_zht_compare_swap_mutex);
+#elif SHARED_MUTEX
+	lock_guard lock(&c_zht_client_mutex);
+#else
+#endif
+
 	ZHTClient * zhtcppClient = (ZHTClient *) zhtClient;
 
 	string skey(key);
@@ -115,25 +177,46 @@ int c_zht_compare_swap_std(ZHTClient_c zhtClient, const char *key,
 	string resultStr;
 	int rc = zhtcppClient->compare_swap(skey, sseenValue, snewValue, resultStr);
 
+	memset(value_queried, 0, strlen(value_queried));
+
 	strncpy(value_queried, resultStr.c_str(), resultStr.size());
 
 	return rc;
 }
 
 int c_state_change_callback_std(ZHTClient_c zhtClient, const char *key,
-		const char *expeded_val) {
+		const char *expeded_val, int lease) {
+
+#ifdef IND_MUTEX
+	lock_guard lock(&c_state_change_callback_mutex);
+#elif SHARED_MUTEX
+	lock_guard lock(&c_zht_client_mutex);
+#else
+#endif
 
 	ZHTClient * zhtcppClient = (ZHTClient *) zhtClient;
 
 	string skey(key);
 	string expededval(expeded_val);
 
-	int rc = zhtcppClient->state_change_callback(skey, expededval);
+	int rc = zhtcppClient->state_change_callback(skey, expededval, lease);
 
 	return rc;
 }
 
 int c_zht_teardown_std(ZHTClient_c zhtClient) {
+
+#ifdef IND_MUTEX
+	pthread_mutex_destroy (&c_zht_lookup_mutex);
+	pthread_mutex_destroy (&c_zht_remove_mutex);
+	pthread_mutex_destroy (&c_zht_insert_mutex);
+	pthread_mutex_destroy (&c_zht_append_mutex);
+	pthread_mutex_destroy (&c_zht_compare_swap_mutex);
+	pthread_mutex_destroy (&c_state_change_callback_mutex);
+#elif SHARED_MUTEX
+	pthread_mutex_destroy(&c_zht_client_mutex);
+#else
+#endif
 
 	ZHTClient * zhtcppClient = (ZHTClient *) zhtClient;
 

@@ -46,15 +46,22 @@
 #include "Env.h"
 #include "bigdata_transfer.h"
 
+#include "lock_guard.h"
+
 using namespace iit::datasys::zht::dm;
 
-int UDPProxy::UDP_SOCKET = -1;
+/*
+ UDPProxy::SMAP UDPProxy::SOCK_CACHE = UDPProxy::SMAP();
+ UDPProxy::AMAP UDPProxy::ADDR_CACHE = UDPProxy::AMAP();
+ */
 
-UDPProxy::SMAP UDPProxy::SOCK_CACHE = UDPProxy::SMAP();
-UDPProxy::AMAP UDPProxy::ADDR_CACHE = UDPProxy::AMAP();
+bool UDPProxy::INIT_AC_MUTEX = false;
+pthread_mutex_t UDPProxy::AC_MUTEX;
 
-UDPProxy::UDPProxy() {
+UDPProxy::UDPProxy() :
+		SOCK_CACHE(), ADDR_CACHE() {
 
+	init_AC_MUTEX();
 }
 
 UDPProxy::~UDPProxy() {
@@ -73,9 +80,15 @@ bool UDPProxy::sendrecv(const void *sendbuf, const size_t sendcount,
 
 	reuseSock(sock);
 
+	/*get mutex to protected shared socket*/
+	pthread_mutex_t *sock_mutex = getSockMutex(he.host, he.port);
+	lock_guard lock(sock_mutex);
+
+
 	/*send message to server over client sock fd*/
 	int sentSize = sendTo(sock, he.host, he.port, (char*) sendbuf, sendcount);
 	int sent_bool = sentSize == sendcount;
+
 
 	/*receive response from server over client sock fd*/ //todo: loopedReceive for zht_lookup
 	recvcount = recvFrom(sock, recvbuf);
@@ -186,10 +199,13 @@ bool UDPProxy::teardown() {
 
 		int rc = close(it->second);
 
-		SOCK_CACHE.erase(it);
-
 		result &= rc == 0;
 	}
+
+	SOCK_CACHE.clear();
+	ADDR_CACHE.clear();
+
+	result &= IPProtoProxy::teardown();
 
 	return result;
 }
@@ -198,65 +214,66 @@ int UDPProxy::getSockCached(const string& host, const uint& port) {
 
 	int sock = 0;
 
+#ifdef SOCKET_CACHE
 	string hashKey = HashUtil::genBase(host, port);
 
 	SIT it = SOCK_CACHE.find(hashKey);
 
 	if (it == SOCK_CACHE.end()) {
 
+		lock_guard lock(&CC_MUTEX);
+
 		sock = makeClientSocket(host, port);
 
 		if (sock <= 0) {
 
 			cerr << "UDPProxy::getSockCached(): error on makeClientSocket("
-					<< host << ":" << port << "): " << strerror(errno) << endl;
+			<< host << ":" << port << "): " << strerror(errno) << endl;
 			sock = -1;
 		} else {
 
 			SOCK_CACHE[hashKey] = sock;
+
+			putSockMutex(host, port);
 		}
 	} else {
 
 		sock = it->second;
 	}
+#else
+	sock = makeClientSocket(host, port);
+#endif
 
 	return sock;
 }
 
 sockaddr_in UDPProxy::getAddrCached(const string& host, const uint& port) {
 
+	sockaddr_in result;
+
+#ifdef SOCKET_CACHE
 	string hashKey = HashUtil::genBase(host, port);
 
 	AIT it = ADDR_CACHE.find(hashKey);
 
 	if (it == ADDR_CACHE.end()) {
 
-		ADDR_CACHE[hashKey] = makeClientAddr(host, port);
+		lock_guard lock(&AC_MUTEX);
 
-		return ADDR_CACHE[hashKey];
+		result = makeClientAddr(host, port);
+
+		ADDR_CACHE[hashKey] = result;
 
 	} else {
 
-		return ADDR_CACHE[hashKey];
+		result = ADDR_CACHE[hashKey];
 	}
+#else
+	result = makeClientAddr(host, port);
+#endif
+
+	return result;
 }
-
-/*int UDPProxy::getSockCached(const string& host, const uint& port) {
-
- int sock;
-
- if (UDP_SOCKET <= 0) {
-
- sock = makeClientSocket(host, port);
- UDP_SOCKET = sock;
-
- } else {
-
- sock = UDP_SOCKET;
- }
-
- return sock;
- }*/
 
 int UDPProxy::makeClientSocket(const string& host, const uint& port) {
 
@@ -297,6 +314,15 @@ sockaddr_in UDPProxy::makeClientAddr(const string& host, const uint& port) {
 	return dest;
 }
 
+void UDPProxy::init_AC_MUTEX() {
+
+	if (!INIT_AC_MUTEX) {
+
+		pthread_mutex_init(&AC_MUTEX, NULL);
+		INIT_AC_MUTEX = true;
+	}
+}
+
 UDPStub::UDPStub() {
 
 }
@@ -307,9 +333,18 @@ UDPStub::~UDPStub() {
 bool UDPStub::recvsend(ProtoAddr addr, const void *recvbuf) {
 
 	/*get response to be sent to client*/
+	string recvstr((char*) recvbuf);
+#ifdef SCCB
+	HTWorker htw(addr, this);
+#else
 	HTWorker htw;
-	string result = htw.run((char*) recvbuf);
+#endif
 
+	string result = htw.run(recvstr.c_str());
+
+#ifdef SCCB
+	return true;
+#else
 	const char *sendbuf = result.data();
 	int sendcount = result.size();
 
@@ -318,23 +353,25 @@ bool UDPStub::recvsend(ProtoAddr addr, const void *recvbuf) {
 	bool sent_bool = sentsize == sendcount;
 
 	return sent_bool;
+
+#endif
 }
 
 #ifdef BIG_MSG
-int UDPStub::sendBack(ProtoAddr addr, const void* sendbuf, int sendcount) {
+int UDPStub::sendBack(ProtoAddr addr, const void* sendbuf, int sendcount) const {
 
-	//send response to client over server sock fd
+//send response to client over server sock fd
 	BdSendBase *pbsb = new BdSendToClient((char*) sendbuf);
 	int sentsize = pbsb->bsend(addr.fd, addr.sender);
 	delete pbsb;
 	pbsb = NULL;
 
-	//prompt errors
+//prompt errors
 	if (sentsize < sendcount) {
 
 		//todo: bug prone
-		cerr << "UDPStub::sendBack():  error on BdSendToClient::bsend(...): "
-		<< strerror(errno) << endl;
+		/*cerr << "UDPStub::sendBack():  error on BdSendToClient::bsend(...): "
+		 << strerror(errno) << endl;*/
 	}
 
 	return sentsize;
@@ -342,13 +379,13 @@ int UDPStub::sendBack(ProtoAddr addr, const void* sendbuf, int sendcount) {
 #endif
 
 #ifdef SML_MSG
-int UDPStub::sendBack(ProtoAddr addr, const void* sendbuf, int sendcount) {
+int UDPStub::sendBack(ProtoAddr addr, const void* sendbuf, int sendcount) const {
 
-	//send response to client over server sock fd
+//send response to client over server sock fd
 	int sentsize = ::sendto(addr.fd, sendbuf, sendcount, 0,
 			(struct sockaddr*)addr.sender, sizeof(struct sockaddr));
 
-	//prompt errors
+//prompt errors
 	if (sentsize < sendcount) {
 
 		cerr << "UDPStub::sendBack():  error on BdSendToClient::bsend(...): "

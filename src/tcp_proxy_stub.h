@@ -33,6 +33,7 @@
 
 #include "ip_proxy_stub.h"
 #include "HTWorker.h"
+#include <pthread.h>
 
 #include <map>
 using namespace std;
@@ -63,7 +64,8 @@ private:
 	int sendTo(int sock, const void* sendbuf, int sendcount);
 
 private:
-	static MAP CONN_CACHE;
+	//static MAP CONN_CACHE;
+	MAP CONN_CACHE;
 };
 
 class TCPStub: public IPProtoStub {
@@ -73,11 +75,10 @@ public:
 
 	virtual bool recvsend(ProtoAddr addr, const void *recvbuf);
 
-protected:
-	virtual int sendBack(ProtoAddr addr, const void* sendbuf, int sendcount);
+public:
+	virtual int sendBack(ProtoAddr addr, const void* sendbuf,
+			int sendcount) const;
 
-private:
-	HTWorker _htw;
 };
 
 #endif /* TCP_PROXY_STUB_H_ */

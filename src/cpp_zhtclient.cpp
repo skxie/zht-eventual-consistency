@@ -31,6 +31,7 @@
 #include "cpp_zhtclient.h"
 
 #include  <stdlib.h>
+#include <string.h>
 
 #include "zpack.pb.h"
 #include "ConfHandler.h"
@@ -72,8 +73,18 @@ int ZHTClient::init(const string& zhtConf, const string& neighborConf) {
 		return 0;
 }
 
+int ZHTClient::init(const char *zhtConf, const char *neighborConf) {
+
+	string szhtconf(zhtConf);
+	string sneighborconf(neighborConf);
+
+	int rc = init(szhtconf, sneighborconf);
+
+	return rc;
+}
+
 int ZHTClient::commonOp(const string &opcode, const string &key,
-		const string &val, const string &val2, string &result) {
+		const string &val, const string &val2, string &result, int lease) {
 
 	if (opcode != Const::ZSC_OPC_LOOKUP && opcode != Const::ZSC_OPC_REMOVE
 			&& opcode != Const::ZSC_OPC_INSERT
@@ -82,7 +93,7 @@ int ZHTClient::commonOp(const string &opcode, const string &key,
 			&& opcode != Const::ZSC_OPC_STCHGCB)
 		return Const::toInt(Const::ZSC_REC_UOPC);
 
-	string sstatus = commonOpInternal(opcode, key, val, val2, result);
+	string sstatus = commonOpInternal(opcode, key, val, val2, result, lease);
 
 	int status = Const::ZSI_REC_CLTFAIL;
 	if (!sstatus.empty())
@@ -95,9 +106,21 @@ int ZHTClient::lookup(const string &key, string &result) {
 
 	string val;
 	string val2;
-	int rc = commonOp(Const::ZSC_OPC_LOOKUP, key, val, val2, result);
+	int rc = commonOp(Const::ZSC_OPC_LOOKUP, key, val, val2, result, 1);
 
 	result = extract_value(result);
+
+	return rc;
+}
+
+int ZHTClient::lookup(const char *key, char *result) {
+
+	string skey(key);
+	string sresult;
+
+	int rc = lookup(skey, sresult);
+
+	strncpy(result, sresult.c_str(), sresult.size() + 1);
 
 	return rc;
 }
@@ -107,7 +130,16 @@ int ZHTClient::remove(const string &key) {
 	string val;
 	string val2;
 	string result;
-	int rc = commonOp(Const::ZSC_OPC_REMOVE, key, val, val2, result);
+	int rc = commonOp(Const::ZSC_OPC_REMOVE, key, val, val2, result, 1);
+
+	return rc;
+}
+
+int ZHTClient::remove(const char *key) {
+
+	string skey(key);
+
+	int rc = remove(skey);
 
 	return rc;
 }
@@ -116,7 +148,17 @@ int ZHTClient::insert(const string &key, const string &val) {
 
 	string val2;
 	string result;
-	int rc = commonOp(Const::ZSC_OPC_INSERT, key, val, val2, result);
+	int rc = commonOp(Const::ZSC_OPC_INSERT, key, val, val2, result, 1);
+
+	return rc;
+}
+
+int ZHTClient::insert(const char *key, const char *val) {
+
+	string skey(key);
+	string sval(val);
+
+	int rc = insert(skey, sval);
 
 	return rc;
 }
@@ -125,7 +167,17 @@ int ZHTClient::append(const string &key, const string &val) {
 
 	string val2;
 	string result;
-	int rc = commonOp(Const::ZSC_OPC_APPEND, key, val, val2, result);
+	int rc = commonOp(Const::ZSC_OPC_APPEND, key, val, val2, result, 1);
+
+	return rc;
+}
+
+int ZHTClient::append(const char *key, const char *val) {
+
+	string skey(key);
+	string sval(val);
+
+	int rc = append(skey, sval);
 
 	return rc;
 }
@@ -174,26 +226,53 @@ string ZHTClient::extract_value(const string &returnStr) {
 int ZHTClient::compare_swap(const string &key, const string &seen_val,
 		const string &new_val, string &result) {
 
-	int rc = commonOp(Const::ZSC_OPC_CMPSWP, key, seen_val, new_val, result);
+	int rc = commonOp(Const::ZSC_OPC_CMPSWP, key, seen_val, new_val, result, 1);
 
 	result = extract_value(result);
 
 	return rc;
 }
 
+int ZHTClient::compare_swap(const char *key, const char *seen_val,
+		const char *new_val, char *result) {
+
+	string skey(key);
+	string sseen_val(seen_val);
+	string snew_val(new_val);
+	string sresult;
+
+	int rc = compare_swap(skey, sseen_val, snew_val, sresult);
+
+	strncpy(result, sresult.c_str(), sresult.size() + 1);
+
+	return rc;
+}
+
 int ZHTClient::state_change_callback(const string &key,
-		const string &expeded_val) {
+		const string &expeded_val, int lease) {
 
 	string val2;
 	string result;
 
-	int rc = commonOp(Const::ZSC_OPC_STCHGCB, key, expeded_val, val2, result);
+	int rc = commonOp(Const::ZSC_OPC_STCHGCB, key, expeded_val, val2, result,
+			lease);
+
+	return rc;
+}
+
+int ZHTClient::state_change_callback(const char *key, const char *expeded_val,
+		int lease) {
+
+	string skey(key);
+	string sexpeded_val(expeded_val);
+
+	int rc = state_change_callback(skey, sexpeded_val, lease);
 
 	return rc;
 }
 
 string ZHTClient::commonOpInternal(const string &opcode, const string &key,
-		const string &val, const string &val2, string &result) {
+		const string &val, const string &val2, string &result, int lease) {
 
 	ZPack zpack;
 	zpack.set_opcode(opcode); //"001": lookup, "002": remove, "003": insert, "004": append, "005", compare_swap
@@ -223,6 +302,8 @@ string ZHTClient::commonOpInternal(const string &opcode, const string &key,
 		zpack.set_newval(val2);
 		zpack.set_newvalnull(false);
 	}
+
+	zpack.set_lease(Const::toString(lease));
 
 	string msg = zpack.SerializeAsString();
 
