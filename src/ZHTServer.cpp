@@ -59,12 +59,9 @@ int main(int argc, char **argv) {
 	string zhtConf;
 	string neighborConf;
 	string novohtDbFile;
-<<<<<<< HEAD
 	int neighborNum = 0;
 	int replicaNum = 0;
 	int portDiff = 0;
-=======
->>>>>>> 91778f91ab5687d490cace399436ae736b8e9411
 
 	int c;
 	while ((c = getopt(argc, argv, "z:n:p:f:h")) != -1) {
