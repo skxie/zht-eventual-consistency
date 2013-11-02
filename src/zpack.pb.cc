@@ -29,7 +29,7 @@ void protobuf_AssignDesc_zpack_2eproto() {
       "zpack.proto");
   GOOGLE_CHECK(file != NULL);
   ZPack_descriptor_ = file->message_type(0);
-  static const int ZPack_offsets_[8] = {
+  static const int ZPack_offsets_[9] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ZPack, opcode_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ZPack, key_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ZPack, val_),
@@ -38,6 +38,7 @@ void protobuf_AssignDesc_zpack_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ZPack, valnull_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ZPack, newvalnull_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ZPack, replicanum_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ZPack, versionnum_),
   };
   ZPack_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -80,10 +81,11 @@ void protobuf_AddDesc_zpack_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\013zpack.proto\"\211\001\n\005ZPack\022\016\n\006opcode\030\001 \001(\014\022"
+    "\n\013zpack.proto\"\235\001\n\005ZPack\022\016\n\006opcode\030\001 \001(\014\022"
     "\013\n\003key\030\002 \001(\014\022\013\n\003val\030\003 \001(\014\022\016\n\006newval\030\004 \001("
     "\014\022\r\n\005lease\030\005 \001(\014\022\017\n\007valnull\030\006 \001(\010\022\022\n\nnew"
-    "valnull\030\007 \001(\010\022\022\n\nreplicanum\030\010 \001(\005", 153);
+    "valnull\030\007 \001(\010\022\022\n\nreplicanum\030\010 \001(\005\022\022\n\nver"
+    "sionnum\030\t \001(\005", 173);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "zpack.proto", &protobuf_RegisterTypes);
   ZPack::default_instance_ = new ZPack();
@@ -110,6 +112,7 @@ const int ZPack::kLeaseFieldNumber;
 const int ZPack::kValnullFieldNumber;
 const int ZPack::kNewvalnullFieldNumber;
 const int ZPack::kReplicanumFieldNumber;
+const int ZPack::kVersionnumFieldNumber;
 #endif  // !_MSC_VER
 
 ZPack::ZPack()
@@ -136,6 +139,7 @@ void ZPack::SharedCtor() {
   valnull_ = false;
   newvalnull_ = false;
   replicanum_ = 0;
+  versionnum_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -213,6 +217,9 @@ void ZPack::Clear() {
     valnull_ = false;
     newvalnull_ = false;
     replicanum_ = 0;
+  }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    versionnum_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -337,6 +344,22 @@ bool ZPack::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(72)) goto parse_versionnum;
+        break;
+      }
+      
+      // optional int32 versionnum = 9;
+      case 9: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_versionnum:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &versionnum_)));
+          set_has_versionnum();
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -404,6 +427,11 @@ void ZPack::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(8, this->replicanum(), output);
   }
   
+  // optional int32 versionnum = 9;
+  if (has_versionnum()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(9, this->versionnum(), output);
+  }
+  
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -460,6 +488,11 @@ void ZPack::SerializeWithCachedSizes(
   // optional int32 replicanum = 8;
   if (has_replicanum()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(8, this->replicanum(), target);
+  }
+  
+  // optional int32 versionnum = 9;
+  if (has_versionnum()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(9, this->versionnum(), target);
   }
   
   if (!unknown_fields().empty()) {
@@ -526,6 +559,15 @@ int ZPack::ByteSize() const {
     }
     
   }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    // optional int32 versionnum = 9;
+    if (has_versionnum()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->versionnum());
+    }
+    
+  }
   if (!unknown_fields().empty()) {
     total_size +=
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
@@ -577,6 +619,11 @@ void ZPack::MergeFrom(const ZPack& from) {
       set_replicanum(from.replicanum());
     }
   }
+  if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    if (from.has_versionnum()) {
+      set_versionnum(from.versionnum());
+    }
+  }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
@@ -607,6 +654,7 @@ void ZPack::Swap(ZPack* other) {
     std::swap(valnull_, other->valnull_);
     std::swap(newvalnull_, other->newvalnull_);
     std::swap(replicanum_, other->replicanum_);
+    std::swap(versionnum_, other->versionnum_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

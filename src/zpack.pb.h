@@ -164,6 +164,13 @@ class ZPack : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 replicanum() const;
   inline void set_replicanum(::google::protobuf::int32 value);
   
+  // optional int32 versionnum = 9;
+  inline bool has_versionnum() const;
+  inline void clear_versionnum();
+  static const int kVersionnumFieldNumber = 9;
+  inline ::google::protobuf::int32 versionnum() const;
+  inline void set_versionnum(::google::protobuf::int32 value);
+  
   // @@protoc_insertion_point(class_scope:ZPack)
  private:
   inline void set_has_opcode();
@@ -182,6 +189,8 @@ class ZPack : public ::google::protobuf::Message {
   inline void clear_has_newvalnull();
   inline void set_has_replicanum();
   inline void clear_has_replicanum();
+  inline void set_has_versionnum();
+  inline void clear_has_versionnum();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
@@ -193,9 +202,10 @@ class ZPack : public ::google::protobuf::Message {
   bool valnull_;
   bool newvalnull_;
   ::google::protobuf::int32 replicanum_;
+  ::google::protobuf::int32 versionnum_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
   
   friend void  protobuf_AddDesc_zpack_2eproto();
   friend void protobuf_AssignDesc_zpack_2eproto();
@@ -565,6 +575,28 @@ inline ::google::protobuf::int32 ZPack::replicanum() const {
 inline void ZPack::set_replicanum(::google::protobuf::int32 value) {
   set_has_replicanum();
   replicanum_ = value;
+}
+
+// optional int32 versionnum = 9;
+inline bool ZPack::has_versionnum() const {
+  return (_has_bits_[0] & 0x00000100u) != 0;
+}
+inline void ZPack::set_has_versionnum() {
+  _has_bits_[0] |= 0x00000100u;
+}
+inline void ZPack::clear_has_versionnum() {
+  _has_bits_[0] &= ~0x00000100u;
+}
+inline void ZPack::clear_versionnum() {
+  versionnum_ = 0;
+  clear_has_versionnum();
+}
+inline ::google::protobuf::int32 ZPack::versionnum() const {
+  return versionnum_;
+}
+inline void ZPack::set_versionnum(::google::protobuf::int32 value) {
+  set_has_versionnum();
+  versionnum_ = value;
 }
 
 
