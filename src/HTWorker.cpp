@@ -68,6 +68,8 @@ HTWorker::HTWorker() :
 	init_store();
 
 	init_sscb_mutex();
+
+	init_proxy();
 }
 
 HTWorker::HTWorker(const ProtoAddr& addr, const ProtoStub* const stub) :
@@ -76,9 +78,16 @@ HTWorker::HTWorker(const ProtoAddr& addr, const ProtoStub* const stub) :
 	init_store();
 
 	init_sscb_mutex();
+
+	init_proxy();
 }
 
 HTWorker::~HTWorker() {
+
+	if (_proxy != NULL) {
+		delete _proxy;
+		_proxy = NULL;
+	}
 }
 
 string HTWorker::run(const char *buf) {
@@ -112,16 +121,28 @@ string HTWorker::run(const char *buf) {
 		result = Const::ZSC_REC_UOPC;
 	}
 
-	if (ConfHandler::ZC_NUM_REPLICAS != 0 && zpack.replicanum() == Const::ZSI_REP_ORIG) {
-
-		if (zpack.opcode() == Const::ZSC_OPC_INSERT) {
-
-		} else if (zpack.opcode() == Const::ZSC_OPC_REMOVE) {
-
-		}
-	}
+	//strong consistency
+	strongConsistency(zpack);
 
 	return result;
+}
+
+void HTWorker::strongConsistency(ZPack &zpack) {
+
+	if (ConfHandler::ZC_NUM_REPLICAS != 0 && zpack.replicanum() == Const::ZSI_REP_ORIG) {
+
+			if (zpack.opcode() == Const::ZSC_OPC_INSERT || zpack.opcode() == Const::ZSC_OPC_REMOVE
+							|| zpack.opcode() == Const::ZSC_OPC_APPEND) {
+				zpack.set_replicanum(Const::ZSI_REP_PRIM);
+				for (ConfHandler::HIT iter = ConfHandler::ReplicaVector.begin() + 1; iter != ConfHandler::ReplicaVector.end(); iter++) {
+					string msg = zpack.SerializeAsString();
+					char *buf = (char*) calloc(_msg_maxsize, sizeof(char));
+					size_t msz = _msg_maxsize;
+					/*send to and receive from*/
+					_proxy->sendrecv(*iter, msg.c_str(), msg.size(), buf, msz);
+				}
+			}
+	}
 }
 
 string HTWorker::insert_shared(const ZPack &zpack) {
@@ -445,6 +466,18 @@ void HTWorker::init_store() {
 
 	if (PMAP == NULL)
 		PMAP = new NoVoHT(get_novoht_file(), 100000, 10000, 0.7);
+}
+
+int HTWorker::init_proxy() {
+
+	_msg_maxsize = Env::get_msg_maxsize();
+
+	_proxy = ProxyStubFactory::createProxy();
+
+	if (_proxy == 0)
+		return -1;
+	else
+		return 0;
 }
 
 bool HTWorker::get_instant_swap() {

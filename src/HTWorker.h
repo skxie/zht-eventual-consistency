@@ -34,6 +34,7 @@
 #include "zpack.pb.h"
 #include "novoht.h"
 #include "proxy_stub.h"
+#include "ProxyStubFactory.h"
 #include <string>
 #include <queue>
 using namespace std;
@@ -97,9 +98,17 @@ private:
 	static void init_sscb_mutex();
 
 private:
+	int init_proxy();
+	void strongConsistency(ZPack &zpack);
+
+private:
 	ProtoAddr _addr;
 	const ProtoStub * const _stub;
 	bool _instant_swap;
+
+private:
+	ProtoProxy *_proxy;
+	int _msg_maxsize;
 
 private:
 	static NoVoHT *PMAP;

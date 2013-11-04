@@ -77,6 +77,11 @@ bool ProtoProxy::sendrecv(const void *sendbuf, const size_t sendcount,
 	return false;
 }
 
+bool ProtoProxy::sendrecv(const HostEntity &he, const void *sendbuf, const size_t sendcount,
+			void *recvbuf, size_t &recvcount) {
+	return false;
+}
+
 bool ProtoProxy::teardown() {
 
 	return false;

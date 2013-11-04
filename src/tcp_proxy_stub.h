@@ -52,6 +52,8 @@ public:
 
 	virtual bool sendrecv(const void *sendbuf, const size_t sendcount,
 			void *recvbuf, size_t &recvcount);
+	virtual bool sendrecv(const HostEntity &he, const void *sendbuf, const size_t sendcount,
+				void *recvbuf, size_t &recvcount);
 	virtual bool teardown();
 
 protected:

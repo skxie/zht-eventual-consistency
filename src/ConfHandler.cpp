@@ -32,6 +32,7 @@
 #include "ConfEntry.h"
 #include "StrTokenizer.h"
 #include "ZHTUtil.h"
+#include "zpack.pb.h"
 
 #include <stdlib.h>
 #include <string>
