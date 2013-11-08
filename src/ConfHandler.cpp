@@ -39,6 +39,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <sstream>
+#include <unistd.h>
 
 #include <fstream>
 #include <iostream>
@@ -77,6 +78,8 @@ uint ConfHandler::NC_FILESERVER_PORT = 9000;
 
 string ConfHandler::ZC_HTDATA_PATH = ""; //todo: empty string not allowed.
 uint ConfHandler::ZC_MIGSLP_TIME = 1000000; //micro second
+
+uint ConfHandler::NEIGHBOR_VECTOR_POSITION = 0;
 
 ConfHandler::ConfHandler() {
 

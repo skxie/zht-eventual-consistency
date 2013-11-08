@@ -102,6 +102,7 @@ const string Const::ZSC_OPC_INSERT = "003";
 const string Const::ZSC_OPC_APPEND = "004";
 const string Const::ZSC_OPC_CMPSWP = "005";
 const string Const::ZSC_OPC_STCHGCB = "006";
+const string Const::ZSC_OPC_CMPVER = "007";
 const string Const::ZSC_OPC_BRDDN_GMEM = "087";
 const string Const::ZSC_OPC_OPR_CANCEL = "088";
 const string Const::ZSC_OPC_GET_ASNGHB = "089";
@@ -117,6 +118,7 @@ const string Const::ZSC_REC_EMPTYKEY = "-01";
 const string Const::ZSC_REC_CLTFAIL = "-02";
 const string Const::ZSC_REC_SRVFAIL = "-03";
 const string Const::ZSC_REC_SRVEXP = "-04";
+const string Const::ZSC_REC_VERSIONCONFLICT = "-90";
 const string Const::ZSC_REC_SCCBPOLLTRY = "-91";
 const string Const::ZSC_REC_NONEXISTKEY = "-92";
 const string Const::ZSC_REC_NODESTZHT = "-93";
@@ -129,12 +131,14 @@ const string Const::ZSC_REC_UNPR = "-99";
 const string Const::ZSC_REC_SUCC = "000";
 const string Const::ZSC_REP_ORIG = "3";
 const string Const::ZSC_REP_PRIM = "5";
+const string Const::ZSC_REP_REPLICA = "7";
 
 const int Const::ZSI_OPC_LOOKUP = 1;
 const int Const::ZSI_OPC_REMOVE = 2;
 const int Const::ZSI_OPC_INSERT = 3;
 const int Const::ZSI_OPC_APPEND = 4;
 const int Const::ZSI_OPC_CMPSWP = 5;
+const int Const::ZSI_OPC_CMPVER = 7;
 const int Const::ZSI_OPC_BRDDN_GMEM = 87;
 const int Const::ZSI_OPC_OPR_CANCEL = 88;
 const int Const::ZSI_OPC_GET_ASNGHB = 89;
@@ -150,6 +154,7 @@ const int Const::ZSI_REC_EMPTYKEY = -1;
 const int Const::ZSI_REC_CLTFAIL = -2;
 const int Const::ZSI_REC_SRVFAIL = -3;
 const int Const::ZSI_REC_SRVEXP = -4;
+const int Const::ZSI_REC_VERSIONCONFLICT = -90;
 const int Const::ZSI_REC_NONEXISTKEY = -92;
 const int Const::ZSI_REC_NODESTZHT = -93;
 const int Const::ZSI_REC_NONEEDMIG = -94;
@@ -161,6 +166,7 @@ const int Const::ZSI_REC_UNPR = -99;
 const int Const::ZSI_REC_SUCC = 0;
 const int Const::ZSI_REP_ORIG = 3;
 const int Const::ZSI_REP_PRIM = 5;
+const int Const::ZSI_REP_REPLICA = 7;
 
 Const::Const() {
 }

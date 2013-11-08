@@ -82,6 +82,12 @@ private:
 	string remove_shared(const ZPack &zpack);
 
 private:
+	int extract_versionnum(const string &returnStr);
+	string compare_versionnum_with_primary(const string &key, const int versionnum, string &msgFromPrimary);
+	string UpdateVersion(const string &key, const string &vale);
+	string extract_value(const string val);
+
+private:
 	static void *threaded_state_change_callback(void *arg);
 	static string state_change_callback_internal(const ZPack &zpack);
 

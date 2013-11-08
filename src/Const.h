@@ -168,6 +168,7 @@ public:
 	static const string ZSC_OPC_APPEND; //append item
 	static const string ZSC_OPC_CMPSWP; //compare and swap item
 	static const string ZSC_OPC_STCHGCB; //state change call back
+	static const string ZSC_OPC_CMPVER; //compare versionnum
 	static const string ZSC_OPC_BRDDN_GMEM; //broadcast global membership done
 	static const string ZSC_OPC_OPR_CANCEL; //cancle an operation
 	static const string ZSC_OPC_GET_ASNGHB; //get information of ZHTNode as a neighbor
@@ -184,6 +185,7 @@ public:
 	static const string ZSC_REC_SRVFAIL; //operation failed in server-side
 	static const string ZSC_REC_SCCBPOLLTRY; //retry state_change_callback polling
 	static const string ZSC_REC_SRVEXP; //operation failed
+	static const string ZSC_REC_VERSIONCONFLICT; //version conflict on priarmy and replica
 	static const string ZSC_REC_NONEXISTKEY; //non existent key
 	static const string ZSC_REC_NODESTZHT; //no destination for a key
 	static const string ZSC_REC_NONEEDMIG; //no need to migrate from
@@ -195,12 +197,14 @@ public:
 	static const string ZSC_REC_SUCC; //succeeded
 	static const string ZSC_REP_ORIG; //the message sent from client
 	static const string ZSC_REP_PRIM; //the message sent from primary instance
+	static const string ZSC_REP_REPLICA; //the message sent from replica instance
 
 	static const int ZSI_OPC_LOOKUP; //lookup item
 	static const int ZSI_OPC_REMOVE; //remove item
 	static const int ZSI_OPC_INSERT; //insert item
 	static const int ZSI_OPC_APPEND; //append item
 	static const int ZSI_OPC_CMPSWP; //compare and swap
+	static const int ZSI_OPC_CMPVER; //compare versionnum
 	static const int ZSI_OPC_BRDDN_GMEM; //broadcast global membership done
 	static const int ZSI_OPC_OPR_CANCEL; //cancel an operation
 	static const int ZSI_OPC_GET_ASNGHB; //get information of ZHTNode as a neighbor
@@ -216,6 +220,7 @@ public:
 	static const int ZSI_REC_CLTFAIL; //operation failed in client-side
 	static const int ZSI_REC_SRVFAIL; //operation failed in server-side
 	static const int ZSI_REC_SRVEXP; //server excpetion
+	static const int ZSI_REC_VERSIONCONFLICT; //version conflict on priarmy and replica
 	static const int ZSI_REC_NONEXISTKEY; //non existent key
 	static const int ZSI_REC_NODESTZHT; //no destination for a key
 	static const int ZSI_REC_NONEEDMIG; //no need to migrate from
@@ -227,6 +232,7 @@ public:
 	static const int ZSI_REC_SUCC; //succeeded
 	static const int ZSI_REP_ORIG; //the message sent from client
 	static const int ZSI_REP_PRIM; //the message sent from primary instance
+	static const int ZSI_REP_REPLICA; //the message sent from replica instance
 
 };
 

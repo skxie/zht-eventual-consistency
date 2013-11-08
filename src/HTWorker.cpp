@@ -34,6 +34,7 @@
 #include "Env.h"
 #include "lock_guard.h"
 #include "ConfHandler.h"
+#include "StrTokenizer.h"
 
 #include <unistd.h>
 #include <iostream>
@@ -101,6 +102,28 @@ string HTWorker::run(const char *buf) {
 	if (zpack.opcode() == Const::ZSC_OPC_LOOKUP) {
 
 		result = lookup(zpack);
+		if (zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::NEIGHBOR_VECTOR_POSITION != 0) {
+			int versionNum = extract_versionnum(result);
+			if (versionNum != -1) {
+				//check versionnum with primary
+				string msgFromPrimary;
+				string status = compare_versionnum_with_primary(zpack.key(), versionNum, msgFromPrimary);
+				if (status == Const::ZSC_REC_SUCC)
+					return result;
+				if (status == Const::ZSC_REC_NONEXISTKEY) {
+					result = remove(zpack);
+					result = Const::ZSC_REC_NONEXISTKEY;
+					result.append("Empty");
+				} else if (status == Const::ZSC_REC_VERSIONCONFLICT) {
+					zpack.set_opcode(Const::ZSC_OPC_INSERT);
+					zpack.set_versionnum(extract_versionnum(msgFromPrimary));
+					zpack.set_val(msgFromPrimary);
+					result = insert(zpack);
+				}
+			} else {
+				//check the key-value pair with primary
+			}
+		}
 	} else if (zpack.opcode() == Const::ZSC_OPC_INSERT) {
 
 		result = insert(zpack);
@@ -116,6 +139,9 @@ string HTWorker::run(const char *buf) {
 	} else if (zpack.opcode() == Const::ZSC_OPC_STCHGCB) {
 
 		result = state_change_callback(zpack);
+	} else if (zpack.opcode() == Const::ZSC_OPC_CMPVER) {
+
+		//compare versionnum
 	} else {
 
 		result = Const::ZSC_REC_UOPC;
@@ -126,6 +152,80 @@ string HTWorker::run(const char *buf) {
 
 	return result;
 }
+
+int HTWorker::extract_versionnum(const string &returnStr) {
+
+	int vn = -1;
+	StrTokenizer strtok(returnStr, ":");
+
+	if (strtok.has_more_tokens()) {
+
+		while (strtok.has_more_tokens()) {
+
+			ZPack zpack;
+			zpack.ParseFromString(strtok.next_token());
+
+			if (zpack.valnull())
+				vn = -1;
+			else
+				vn = zpack.versionnum();
+		}
+
+	} else {
+
+		ZPack zpack;
+		zpack.ParseFromString(returnStr);
+
+		if (zpack.valnull())
+			vn = -1;
+		else
+			vn = zpack.versionnum();
+	}
+
+	return vn;
+}
+
+string HTWorker::compare_versionnum_with_primary(const string &key, const int versionnum, string &msgFromPrimary) {
+
+	//generate a zpack with versionnum
+	ZPack zpack;
+	zpack.set_opcode(Const::ZSC_OPC_CMPVER);
+	zpack.set_replicanum(Const::ZSI_REP_REPLICA);
+
+	if (key.empty())
+		return Const::ZSC_REC_EMPTYKEY; //-1, empty key not allowed.
+	else
+		zpack.set_key(key);
+	zpack.set_val("^"); //coup, to fix ridiculous bug of protobuf! //to debug
+	zpack.set_valnull(true);
+	zpack.set_newval("?"); //coup, to fix ridiculous bug of protobuf! //to debug
+	zpack.set_newvalnull(true);
+	zpack.set_versionnum(versionnum);
+
+	//compare the zpack with versionnum with primary
+	ConfHandler::HIT primary = ConfHandler::ReplicaVector.begin();
+	string msg = zpack.SerializeAsString();
+	char *buf = (char*) calloc(_msg_maxsize, sizeof(char));
+	size_t msz = _msg_maxsize;
+	/*send to and receive from*/
+	_proxy->sendrecv(*primary, msg.c_str(), msg.size(), buf, msz);
+
+	/*...parse status and result*/
+	string sstatus;
+
+	string srecv(buf);
+
+	if (srecv.empty()) {
+		sstatus = Const::ZSC_REC_SRVEXP;
+	} else {
+		msgFromPrimary = srecv.substr(3); //the left, if any, is lookup result or second-try zpack
+		sstatus = srecv.substr(0, 3); //status returned, the first three chars, like 001, -98...
+	}
+
+	free(buf);
+	return sstatus;
+}
+
 
 void HTWorker::strongConsistency(ZPack &zpack) {
 
