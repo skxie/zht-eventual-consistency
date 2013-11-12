@@ -40,6 +40,7 @@
 #include <stdio.h>
 #include <sstream>
 #include <unistd.h>
+#include <netdb.h>
 
 #include <fstream>
 #include <iostream>
@@ -112,21 +113,7 @@ int ConfHandler::getPortDiffFromConf(){
 
 int ConfHandler::getReplicaNumFromConf() {
 
-	ConfHandler::MAP *zpmap = &ConfHandler::ZHTParameters;
-
-	ConfHandler::MIT it;
-
-	for (it = zpmap->begin(); it != zpmap->end(); it++) {
-
-		ConfEntry ce;
-		ce.assign(it->first);
-
-		if (ce.name() == Const::ZC_NUM_REPLICAS) {
-
-			return atoi(ce.value().c_str());
-		}
-	}
-	return -1;
+	return atoi(get_zhtconf_parameter(Const::ZC_NUM_REPLICAS).c_str());
 }
 
 string ConfHandler::getProtocolFromConf() {
@@ -342,23 +329,29 @@ void ConfHandler::pickZHTParameters() {
 }
 
 int ConfHandler::getServerHostIndex() {
+
 	char hostName[1024];
+	struct in_addr **addr;
+
 	gethostname(hostName, 1023);
+
+	struct hostent * hostInfo = gethostbyname(hostName);
+	if(hostInfo){
+		addr = (struct in_addr **) hostInfo->h_addr_list;
+		cout << "host name: " << hostInfo->h_name << endl;
+		cout << "ip: " << inet_ntoa(**addr) << endl;
+	}
+
 	int listSize = ConfHandler::NeighborVector.size();
-	//cout << "neighbor vector size: " << listSize << endl;
 	ConfEntry host;
 	int i = 0;
 	for (i = 0; i < listSize; i++) {
 		host = ConfHandler::NeighborVector.at(i);
-		//cout<< "i = "<<i<<endl;
-		//cout << "host name: " << host.name() << " host port: " << host.value() << endl;
-		if (!strcmp(host.name().c_str(), hostName)) {
+		if (!strcmp(host.name().c_str(), hostName) || !strcmp(host.name().c_str(), inet_ntoa(**addr))) {
 			break;
 		}
 	}
 
-	//	cout<<"my index: "<<i<<endl;
-	//	cout << "neighbor vector size: " << listSize << endl;
 	if (i == listSize) {
 		return -1;
 	}
