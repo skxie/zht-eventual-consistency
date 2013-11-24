@@ -129,13 +129,24 @@ string HTWorker::run(const char *buf) {
 		result = insert(zpack);
 	} else if (zpack.opcode() == Const::ZSC_OPC_APPEND) {
 
-		result = append(zpack);
+		if(zpack.replicanum() == Const::ZSI_REP_ORIG){ //request received by primary and sent by client
+			result = lookup(zpack);
+			int versionNum = extract_versionnum(result);
+			zpack.set_versionnum(versionNum + 1);// if versionNum = -1, set it be 0, otherwise, increase by 1
+			result = append(zpack);
+			//call consistency strategy
+		}else if(zpack.replicanum() == Const::ZSI_REP_PRIM || zpack.replicanum() ==  Const::ZSI_REP_REPLICA){
+			//request received by replicas and sent by primary or replica for consistency
+			result = append(zpack);
+			//call consistency strategy
+		}
 	} else if (zpack.opcode() == Const::ZSC_OPC_CMPSWP) {
 
 		result = compare_swap(zpack);
 	} else if (zpack.opcode() == Const::ZSC_OPC_REMOVE) {
 
 		result = remove(zpack);
+		//call consistency strategy
 	} else if (zpack.opcode() == Const::ZSC_OPC_STCHGCB) {
 
 		result = state_change_callback(zpack);
