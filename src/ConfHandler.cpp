@@ -80,7 +80,7 @@ uint ConfHandler::NC_FILESERVER_PORT = 9000;
 string ConfHandler::ZC_HTDATA_PATH = ""; //todo: empty string not allowed.
 uint ConfHandler::ZC_MIGSLP_TIME = 1000000; //micro second
 
-uint ConfHandler::NEIGHBOR_VECTOR_POSITION = 0;
+uint ConfHandler::REPLICA_VECTOR_POSITION = 0;
 
 ConfHandler::ConfHandler() {
 
@@ -249,6 +249,7 @@ void ConfHandler::setReplicaVectorInternal(int replicaNum, int neighborNum, int 
 
 	/*build the replica list of this zht server*/
 	if(replicaNum > 0){
+		ConfHandler::REPLICA_VECTOR_POSITION = indexDiff;
 		primaryHostIndex = ((hostIndex - indexDiff) + neighborNum) % neighborNum;
 		for (int i = 0; i <= replicaNum; i++){
 			replicaHostIndex = (primaryHostIndex + i) % neighborNum;

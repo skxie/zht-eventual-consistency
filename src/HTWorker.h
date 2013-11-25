@@ -47,11 +47,15 @@ public:
 	WorkerThreadArg();
 	WorkerThreadArg(const ZPack &zpack, const ProtoAddr &addr,
 			const ProtoStub * const stub);
+	WorkerThreadArg(const ZPack &zpack, const ProtoAddr &addr,
+			const ProtoStub * const stub, ProtoProxy * proxy, const int msg_maxsize);
 	virtual ~WorkerThreadArg();
 
 	ZPack _zpack;
 	ProtoAddr _addr;
 	const ProtoStub *_stub;
+	ProtoProxy *_proxy;
+	int _msg_maxsize;
 };
 /*
  *
@@ -75,6 +79,8 @@ private:
 	string remove(const ZPack &zpack);
 	string compare_swap(const ZPack &zpack);
 	string state_change_callback(const ZPack &zpack);
+	string checkexists(const ZPack &zpack);
+	string compversion(const ZPack &zpack);
 
 	string insert_shared(const ZPack &zpack);
 	string lookup_shared(const ZPack &zpack);
@@ -84,6 +90,7 @@ private:
 private:
 	int extract_versionnum(const string &returnStr);
 	string compare_versionnum_with_primary(const string &key, const int versionnum, string &msgFromPrimary);
+	string check_exists_with_primary(const string &key, string &msgFromPrimary);
 	string UpdateVersion(const string &key, const string &vale);
 	string extract_value(const string val);
 
@@ -105,7 +112,9 @@ private:
 
 private:
 	int init_proxy();
-	void strongConsistency(ZPack &zpack);
+	void strong_consistency(ZPack &zpack);
+	void eventual_consistency(ZPack &zpack);
+	static void *threaded_eventual_consistnecy(void *arg);
 
 private:
 	ProtoAddr _addr;

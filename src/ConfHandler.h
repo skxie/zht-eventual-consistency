@@ -99,7 +99,7 @@ public:
 	static int32_t PRIMARY_HOST_INDEX;
 	static int32_t HOST_INDEX_DEFF;
 	static int32_t HOST_INDEX;
-	static uint	   NEIGHBOR_VECTOR_POSITION;
+	static uint	   REPLICA_VECTOR_POSITION;
 
 public:
 	static string CONF_ZHT;

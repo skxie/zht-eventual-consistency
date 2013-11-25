@@ -164,11 +164,14 @@ public:
 	 */
 	static const string ZSC_OPC_LOOKUP; //lookup item
 	static const string ZSC_OPC_REMOVE; //remove item
+	static const string ZSC_OPC_REMOVE_SELF; //remove item
 	static const string ZSC_OPC_INSERT; //insert item
+	static const string ZSC_OPC_INSERT_SELF; //insert item self without update with other nodes
 	static const string ZSC_OPC_APPEND; //append item
 	static const string ZSC_OPC_CMPSWP; //compare and swap item
 	static const string ZSC_OPC_STCHGCB; //state change call back
 	static const string ZSC_OPC_CMPVER; //compare versionnum
+	static const string ZSC_OPC_EXISTS; //check whether the key-value pair exists in primary
 	static const string ZSC_OPC_BRDDN_GMEM; //broadcast global membership done
 	static const string ZSC_OPC_OPR_CANCEL; //cancle an operation
 	static const string ZSC_OPC_GET_ASNGHB; //get information of ZHTNode as a neighbor
@@ -201,10 +204,13 @@ public:
 
 	static const int ZSI_OPC_LOOKUP; //lookup item
 	static const int ZSI_OPC_REMOVE; //remove item
+	static const int ZSI_OPC_REMOVE_SELF; //remove item
 	static const int ZSI_OPC_INSERT; //insert item
+	static const int ZSI_OPC_INSERT_SELF; //insert item self without update with other nodes
 	static const int ZSI_OPC_APPEND; //append item
 	static const int ZSI_OPC_CMPSWP; //compare and swap
 	static const int ZSI_OPC_CMPVER; //compare versionnum
+	static const int ZSI_OPC_EXISTS; //check whether the key-value pair exists in primary
 	static const int ZSI_OPC_BRDDN_GMEM; //broadcast global membership done
 	static const int ZSI_OPC_OPR_CANCEL; //cancel an operation
 	static const int ZSI_OPC_GET_ASNGHB; //get information of ZHTNode as a neighbor
