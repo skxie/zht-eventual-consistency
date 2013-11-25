@@ -150,7 +150,7 @@ string HTWorker::run(const char *buf) {
 		}
 	} else if (zpack.opcode() == Const::ZSC_OPC_INSERT) {
 
-		if (ConfHandler::REPLICA_VECTOR_POSITION == 0) {
+		if (zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
 			zpack.set_opcode(Const::ZSC_OPC_LOOKUP);
 			result = lookup(zpack);
 			string res_code = result.substr(0, 3);
@@ -175,6 +175,18 @@ string HTWorker::run(const char *buf) {
 
 	} else if (zpack.opcode() == Const::ZSC_OPC_APPEND) {
 
+		if(zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION == 0){ //request received by primary and sent by client
+			zpack.set_opcode(Const::ZSC_OPC_LOOKUP);
+			result = lookup(zpack);
+			string res_code = result.substr(0, 3);
+			result = result.substr(3);
+			if (res_code == Const::ZSC_REC_SUCC) {
+				zpack.set_versionnum(extract_versionnum(result)+1);
+			} else {
+				zpack.set_versionnum(0);
+			}
+			zpack.set_opcode(Const::ZSC_OPC_APPEND);
+		}
 		result = append(zpack);
 
 		if (result == Const::ZSC_REC_SUCC) {
