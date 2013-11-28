@@ -164,15 +164,6 @@ string HTWorker::run(const char *buf) {
 		}
 		result = insert(zpack);
 
-		if (result == Const::ZSC_REC_SUCC) {
-
-			//strong consistency
-			strong_consistency(zpack);
-
-			//eventual consistency
-			eventual_consistency(zpack);
-		}
-
 	} else if (zpack.opcode() == Const::ZSC_OPC_APPEND) {
 
 		if(zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION == 0){ //request received by primary and sent by client
@@ -189,31 +180,12 @@ string HTWorker::run(const char *buf) {
 		}
 		result = append(zpack);
 
-		if (result == Const::ZSC_REC_SUCC) {
-
-			//strong consistency
-			strong_consistency(zpack);
-
-			//eventual consistency
-			eventual_consistency(zpack);
-		}
-
 	} else if (zpack.opcode() == Const::ZSC_OPC_CMPSWP) {
 
 		result = compare_swap(zpack);
 	} else if (zpack.opcode() == Const::ZSC_OPC_REMOVE) {
 
 		result = remove(zpack);
-
-		if (result == Const::ZSC_REC_SUCC) {
-
-			//strong consistency
-			strong_consistency(zpack);
-
-			//eventual consistency
-			eventual_consistency(zpack);
-		}
-
 	} else if (zpack.opcode() == Const::ZSC_OPC_STCHGCB) {
 
 		result = state_change_callback(zpack);
@@ -378,6 +350,16 @@ string HTWorker::insert(const ZPack &zpack) {
 
 	string result = insert_shared(zpack);
 
+	if (result == Const::ZSC_REC_SUCC) {
+
+		ZPack msg = zpack;
+		//strong consistency
+		strong_consistency(msg);
+
+		//eventual consistency
+		eventual_consistency(msg);
+	}
+
 #ifdef SCCB
 	_stub->sendBack(_addr, result.data(), result.size());
 	return "";
@@ -481,6 +463,16 @@ string HTWorker::append_shared(const ZPack &zpack) {
 string HTWorker::append(const ZPack &zpack) {
 
 	string result = append_shared(zpack);
+
+	if (result == Const::ZSC_REC_SUCC) {
+
+		ZPack msg = zpack;
+		//strong consistency
+		strong_consistency(msg);
+
+		//eventual consistency
+		eventual_consistency(msg);
+	}
 
 #ifdef SCCB
 	_stub->sendBack(_addr, result.data(), result.size());
@@ -719,6 +711,16 @@ string HTWorker::remove_shared(const ZPack &zpack) {
 string HTWorker::remove(const ZPack &zpack) {
 
 	string result = remove_shared(zpack);
+
+	if (result == Const::ZSC_REC_SUCC) {
+
+		ZPack msg = zpack;
+		//strong consistency
+		strong_consistency(msg);
+
+		//eventual consistency
+		eventual_consistency(msg);
+	}
 
 #ifdef SCCB
 	_stub->sendBack(_addr, result.data(), result.size());
