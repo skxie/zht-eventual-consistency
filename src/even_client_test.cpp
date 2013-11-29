@@ -47,7 +47,7 @@ using namespace std;
 using namespace iit::datasys::zht::dm;
 
 ZHTClient zc;
-int numOfOps = -1;
+int numOfOps = 1;
 int lenString = 52;
 vector<string> pkgList;
 
@@ -81,6 +81,27 @@ int test(string &zhtConf, string &neighborConf) {
 	}
 
 	init_packages();
+
+	Package pkg;
+	pkg.ParseFromString(pkgList[0]);
+
+	int ret = zc.insert(pkg.virtualpath(), pkgList[0]);
+
+	if (ret < 0) {
+		cout << "insert error" << endl;
+	} else
+		cout << "insert success" << endl;
+
+	string result;
+
+	int ret = zc.lookup(pkg.virtualpath(), result);
+
+	if (ret < 0) {
+		cout << "lookup error" << endl;
+	} else {
+		cout << "lookup success" << endl;
+		cout << "result is " << result << endl;
+	}
 
 	//benchmarkInsert();
 
