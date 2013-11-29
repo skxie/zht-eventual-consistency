@@ -74,7 +74,7 @@ public:
 
 private:
 	string insert(const ZPack &zpack);
-	string lookup(const ZPack &zpack);
+	string lookup(ZPack &zpack);
 	string append(const ZPack &zpack);
 	string remove(const ZPack &zpack);
 	string compare_swap(const ZPack &zpack);

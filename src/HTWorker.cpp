@@ -107,54 +107,12 @@ string HTWorker::run(const char *buf) {
 	if (zpack.opcode() == Const::ZSC_OPC_LOOKUP) {
 
 		result = lookup(zpack);
-		if (ConfHandler::ZC_NUM_REPLICAS != 0) {
-			if (zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION != 0) {
-				int versionNum = extract_versionnum(result);
-				if (versionNum != -1) {
-					//check versionnum with primary
-					string msgFromPrimary;
-					string status = compare_versionnum_with_primary(zpack.key(), versionNum, msgFromPrimary);
-					if (status == Const::ZSC_REC_SUCC)
-						return result;
-					if (status == Const::ZSC_REC_NONEXISTKEY) {
-						zpack.set_opcode(Const::ZSC_OPC_REMOVE_SELF);
-						result = remove(zpack);
-						result = Const::ZSC_REC_NONEXISTKEY;
-						result.append("Empty");
-					} else if (status == Const::ZSC_REC_VERSIONCONFLICT) {
-						ZPack val;
-						val.ParseFromString(msgFromPrimary);
-						val.set_opcode(Const::ZSC_OPC_INSERT_SELF);
-						result = insert(val);
-						if (result == Const::ZSC_REC_SUCC) {
-							result.append(msgFromPrimary);
-						}
-					}
-				} else {
-					//check the key-value pair with primary
-					string msgFromPrimay;
-					string status = check_exists_with_primary(zpack.key(), msgFromPrimay);
-					if (status == Const::ZSC_REC_SUCC) {
-						ZPack val;
-						val.ParseFromString(msgFromPrimay);
-						val.set_opcode(Const::ZSC_OPC_INSERT_SELF);
-						result = insert(val);
-						if (result == Const::ZSC_REC_SUCC) {
-							result.append(msgFromPrimay);
-						}
 
-					} else if (status == Const::ZSC_REC_NONEXISTKEY) {
-						result = Const::ZSC_REC_NONEXISTKEY;
-						result.append("Empty");
-					}
-				}
-			}
-		}
 	} else if (zpack.opcode() == Const::ZSC_OPC_INSERT) {
 
 		if (zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
 			zpack.set_opcode(Const::ZSC_OPC_LOOKUP);
-			result = lookup(zpack);
+			result = lookup_shared(zpack);
 			string res_code = result.substr(0, 3);
 			result = result.substr(3);
 			if (res_code == Const::ZSC_REC_SUCC) {
@@ -170,7 +128,7 @@ string HTWorker::run(const char *buf) {
 
 		if(zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION == 0){ //request received by primary and sent by client
 			zpack.set_opcode(Const::ZSC_OPC_LOOKUP);
-			result = lookup(zpack);
+			result = lookup_shared(zpack);
 			string res_code = result.substr(0, 3);
 			result = result.substr(3);
 			if (res_code == Const::ZSC_REC_SUCC) {
@@ -185,20 +143,25 @@ string HTWorker::run(const char *buf) {
 	} else if (zpack.opcode() == Const::ZSC_OPC_CMPSWP) {
 
 		result = compare_swap(zpack);
+
 	} else if (zpack.opcode() == Const::ZSC_OPC_REMOVE) {
 
 		result = remove(zpack);
+
 	} else if (zpack.opcode() == Const::ZSC_OPC_STCHGCB) {
 
 		result = state_change_callback(zpack);
-	} else if (ConfHandler::ZC_NUM_REPLICAS != 0 && zpack.opcode() == Const::ZSC_OPC_CMPVER && zpack.replicanum() == Const::ZSI_REP_REPLICA && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
+
+	} else if (ConfHandler::ZC_NUM_REPLICAS > 0 && zpack.opcode() == Const::ZSC_OPC_CMPVER && zpack.replicanum() == Const::ZSI_REP_REPLICA && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
 
 		//compare versionnum
 		result = compversion(zpack);
-	} else if (ConfHandler::ZC_NUM_REPLICAS != 0 && zpack.opcode() == Const::ZSC_OPC_EXISTS && zpack.replicanum() == Const::ZSI_REP_REPLICA && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
+
+	} else if (ConfHandler::ZC_NUM_REPLICAS > 0 && zpack.opcode() == Const::ZSC_OPC_EXISTS && zpack.replicanum() == Const::ZSI_REP_REPLICA && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
 
 		//check whether the key-value pair exists in primary
-		result = lookup(zpack);
+		result = lookup_shared(zpack);
+
 	} else {
 
 		result = Const::ZSC_REC_UOPC;
@@ -352,7 +315,7 @@ string HTWorker::insert(const ZPack &zpack) {
 
 	string result = insert_shared(zpack);
 
-	if (ConfHandler::ZC_NUM_REPLICAS != 0 && result == Const::ZSC_REC_SUCC) {
+	if (ConfHandler::ZC_NUM_REPLICAS > 0 && result == Const::ZSC_REC_SUCC) {
 
 		ZPack msg = zpack;
 		//strong consistency
@@ -377,7 +340,7 @@ string HTWorker::compversion(const ZPack &zpack) {
 	if (zpack.key().empty())
 		return Const::ZSC_REC_EMPTYKEY;
 
-	string lookup_result = lookup(zpack);
+	string lookup_result = lookup_shared(zpack);
 	string sstatus = lookup_result.substr(0, 3);
 	if (sstatus == Const::ZSC_REC_SUCC)
 		lookup_result = lookup_result.substr(3); //the left, if any, is lookup result or second-try zpack
@@ -420,9 +383,55 @@ string HTWorker::lookup_shared(const ZPack &zpack) {
 	return result;
 }
 
-string HTWorker::lookup(const ZPack &zpack) {
+string HTWorker::lookup(ZPack &zpack) {
 
 	string result = lookup_shared(zpack);
+
+	cout << "The number of replica is " << ConfHandler::ZC_NUM_REPLICAS << endl;
+	cout << "The result of lookup is " << result << endl;
+
+	if (ConfHandler::ZC_NUM_REPLICAS > 0) {
+		if (zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION != 0) {
+			int versionNum = extract_versionnum(result);
+			if (versionNum != -1) {
+				//check versionnum with primary
+				string msgFromPrimary;
+				string status = compare_versionnum_with_primary(zpack.key(), versionNum, msgFromPrimary);
+				if (status == Const::ZSC_REC_SUCC)
+					return result;
+				if (status == Const::ZSC_REC_NONEXISTKEY) {
+					zpack.set_opcode(Const::ZSC_OPC_REMOVE_SELF);
+					result = remove_shared(zpack);
+					result = Const::ZSC_REC_NONEXISTKEY;
+					result.append("Empty");
+				} else if (status == Const::ZSC_REC_VERSIONCONFLICT) {
+					ZPack val;
+					val.ParseFromString(msgFromPrimary);
+					val.set_opcode(Const::ZSC_OPC_INSERT_SELF);
+					result = insert_shared(val);
+					if (result == Const::ZSC_REC_SUCC) {
+						result.append(msgFromPrimary);
+					}
+				}
+			} else {
+				//check the key-value pair with primary
+				string msgFromPrimay;
+				string status = check_exists_with_primary(zpack.key(), msgFromPrimay);
+				if (status == Const::ZSC_REC_SUCC) {
+					ZPack val;
+					val.ParseFromString(msgFromPrimay);
+					val.set_opcode(Const::ZSC_OPC_INSERT_SELF);
+					result = insert_shared(val);
+					if (result == Const::ZSC_REC_SUCC) {
+						result.append(msgFromPrimay);
+					}
+				} else if (status == Const::ZSC_REC_NONEXISTKEY) {
+					result = Const::ZSC_REC_NONEXISTKEY;
+					result.append("Empty");
+				}
+			}
+		}
+	}
 
 #ifdef SCCB
 	_stub->sendBack(_addr, result.data(), result.size());
