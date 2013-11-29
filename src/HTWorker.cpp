@@ -387,8 +387,8 @@ string HTWorker::lookup(ZPack &zpack) {
 
 	string result = lookup_shared(zpack);
 
-	//cout << "The number of replica is " << ConfHandler::ZC_NUM_REPLICAS << endl;
-	//cout << "The result of lookup is " << result << endl;
+	cout << "The number of replica is " << ConfHandler::ZC_NUM_REPLICAS << endl;
+	cout << "The result of lookup is " << result << endl;
 
 	if (ConfHandler::ZC_NUM_REPLICAS > 0) {
 		if (zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION != 0) {
