@@ -94,7 +94,7 @@ int test(string &zhtConf, string &neighborConf) {
 
 	string result;
 
-	int ret = zc.lookup(pkg.virtualpath(), result);
+	ret = zc.lookup(pkg.virtualpath(), result);
 
 	if (ret < 0) {
 		cout << "lookup error" << endl;
