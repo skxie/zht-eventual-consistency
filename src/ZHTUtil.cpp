@@ -50,16 +50,16 @@ ZHTUtil::~ZHTUtil() {
 
 HostEntity ZHTUtil::getHostEntityByKey(const string& msg) {
 
-	int numOfReplica = ConfHandler::getReplicaNumFromConf();
+	int numOfReplica = ConfHandler::ZC_NUM_REPLICAS;
 	ZPack zpack;
 	zpack.ParseFromString(msg); //to debug
-	int replicaNum;
+	int replicaNum = 0;
 
 	uint64_t hascode = HashUtil::genHash(zpack.key());
 	size_t node_size = ConfHandler::NeighborVector.size();
 	int index = hascode % node_size;
 
-	if(zpack.opcode() == Const::ZSC_OPC_LOOKUP){
+	if(zpack.opcode() == Const::ZSC_OPC_LOOKUP && numOfReplica > 0){
 		/*randomly generate the index from all replicas*/
 		srand(time(NULL));
 		replicaNum = rand() % numOfReplica;
