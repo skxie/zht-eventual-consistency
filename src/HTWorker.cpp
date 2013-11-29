@@ -315,6 +315,9 @@ string HTWorker::insert(const ZPack &zpack) {
 
 	string result = insert_shared(zpack);
 
+	cout << "The result of insert is " << result << endl;
+	cout << "THe item" << zpack.SerializeAsString() << "has been inserted" << endl;
+
 	if (ConfHandler::ZC_NUM_REPLICAS > 0 && result == Const::ZSC_REC_SUCC) {
 
 		ZPack msg = zpack;
@@ -555,6 +558,8 @@ void *HTWorker::threaded_eventual_consistnecy(void *arg) {
 		size_t msz =pwta-> _msg_maxsize;
 
 		cout << "The receiver for eventual is " << receiver->host << " " << receiver->port << endl;
+		cout << "The operation code for eventual is " << pwta->_zpack.opcode() << endl;
+		cout << "The zpack would be transferred is " << msg << endl;
 
 		pwta->_proxy->sendrecv(*receiver, msg.c_str(), msg.size(), buf, msz);
 
