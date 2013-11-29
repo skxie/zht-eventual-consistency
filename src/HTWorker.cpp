@@ -392,7 +392,9 @@ string HTWorker::lookup(ZPack &zpack) {
 
 	if (ConfHandler::ZC_NUM_REPLICAS > 0) {
 		if (zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION != 0) {
-			int versionNum = extract_versionnum(result);
+			string result_code = result.substr(0, 3);
+			string result_zpack = result.substr(3);
+			int versionNum = extract_versionnum(result_zpack);
 			if (versionNum != -1) {
 				//check versionnum with primary
 				string msgFromPrimary;
@@ -415,6 +417,9 @@ string HTWorker::lookup(ZPack &zpack) {
 				}
 			} else {
 				//check the key-value pair with primary
+
+				cout << "Not found in itself, try to update from primary" << endl;
+
 				string msgFromPrimay;
 				string status = check_exists_with_primary(zpack.key(), msgFromPrimay);
 				if (status == Const::ZSC_REC_SUCC) {
@@ -495,7 +500,7 @@ string HTWorker::append(const ZPack &zpack) {
 
 void HTWorker::strong_consistency(ZPack &zpack) {
 
-	if (ConfHandler::ZC_NUM_REPLICAS != 0 && zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
+	if (ConfHandler::ZC_NUM_REPLICAS > 0 && zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
 
 		if (zpack.opcode() == Const::ZSC_OPC_INSERT || zpack.opcode() == Const::ZSC_OPC_REMOVE || zpack.opcode() == Const::ZSC_OPC_APPEND) {
 			zpack.set_replicanum(Const::ZSI_REP_PRIM);
@@ -512,9 +517,11 @@ void HTWorker::strong_consistency(ZPack &zpack) {
 
 void HTWorker::eventual_consistency(ZPack &zpack) {
 
-	if (ConfHandler::ZC_NUM_REPLICAS != 0 && ConfHandler::REPLICA_VECTOR_POSITION < ConfHandler::ZC_NUM_REPLICAS) {
+	if (ConfHandler::ZC_NUM_REPLICAS > 0 && ConfHandler::REPLICA_VECTOR_POSITION < ConfHandler::ZC_NUM_REPLICAS) {
 
 		if (zpack.opcode() == Const::ZSC_OPC_INSERT || zpack.opcode() == Const::ZSC_OPC_REMOVE || zpack.opcode() == Const::ZSC_OPC_APPEND) {
+
+			cout << "update copy with replica" << endl;
 
 			lock_guard lock(&SCCB_MUTEX);
 			WorkerThreadArg *wta = new WorkerThreadArg(zpack, _addr, _stub, _proxy, _msg_maxsize);
@@ -546,6 +553,9 @@ void *HTWorker::threaded_eventual_consistnecy(void *arg) {
 		string msg = pwta->_zpack.SerializeAsString();
 		char *buf = (char*) calloc(pwta->_msg_maxsize, sizeof(char));
 		size_t msz =pwta-> _msg_maxsize;
+
+		cout << "The receiver for eventual is " << receiver->host << " " << receiver->port << endl;
+
 		pwta->_proxy->sendrecv(*receiver, msg.c_str(), msg.size(), buf, msz);
 
 		delete pwta;
