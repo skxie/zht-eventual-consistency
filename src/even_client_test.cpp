@@ -92,6 +92,8 @@ int test(string &zhtConf, string &neighborConf) {
 	} else
 		cout << "insert success" << endl;
 
+	sleep(5);
+
 	string result;
 
 	ret = zc.lookup(pkg.virtualpath(), result);

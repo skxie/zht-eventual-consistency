@@ -316,7 +316,7 @@ string HTWorker::insert(const ZPack &zpack) {
 	string result = insert_shared(zpack);
 
 	cout << "The result of insert is " << result << endl;
-	cout << "THe item" << zpack.SerializeAsString() << "has been inserted" << endl;
+	cout << "THe item " << zpack.SerializeAsString() << " has been inserted" << endl;
 
 	if (ConfHandler::ZC_NUM_REPLICAS > 0 && result == Const::ZSC_REC_SUCC) {
 
