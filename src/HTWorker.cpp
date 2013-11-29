@@ -107,44 +107,46 @@ string HTWorker::run(const char *buf) {
 	if (zpack.opcode() == Const::ZSC_OPC_LOOKUP) {
 
 		result = lookup(zpack);
-		if (zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION != 0) {
-			int versionNum = extract_versionnum(result);
-			if (versionNum != -1) {
-				//check versionnum with primary
-				string msgFromPrimary;
-				string status = compare_versionnum_with_primary(zpack.key(), versionNum, msgFromPrimary);
-				if (status == Const::ZSC_REC_SUCC)
-					return result;
-				if (status == Const::ZSC_REC_NONEXISTKEY) {
-					zpack.set_opcode(Const::ZSC_OPC_REMOVE_SELF);
-					result = remove(zpack);
-					result = Const::ZSC_REC_NONEXISTKEY;
-					result.append("Empty");
-				} else if (status == Const::ZSC_REC_VERSIONCONFLICT) {
-					ZPack val;
-					val.ParseFromString(msgFromPrimary);
-					val.set_opcode(Const::ZSC_OPC_INSERT_SELF);
-					result = insert(val);
-					if (result == Const::ZSC_REC_SUCC) {
-						result.append(msgFromPrimary);
+		if (ConfHandler::ZC_NUM_REPLICAS != 0) {
+			if (zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION != 0) {
+				int versionNum = extract_versionnum(result);
+				if (versionNum != -1) {
+					//check versionnum with primary
+					string msgFromPrimary;
+					string status = compare_versionnum_with_primary(zpack.key(), versionNum, msgFromPrimary);
+					if (status == Const::ZSC_REC_SUCC)
+						return result;
+					if (status == Const::ZSC_REC_NONEXISTKEY) {
+						zpack.set_opcode(Const::ZSC_OPC_REMOVE_SELF);
+						result = remove(zpack);
+						result = Const::ZSC_REC_NONEXISTKEY;
+						result.append("Empty");
+					} else if (status == Const::ZSC_REC_VERSIONCONFLICT) {
+						ZPack val;
+						val.ParseFromString(msgFromPrimary);
+						val.set_opcode(Const::ZSC_OPC_INSERT_SELF);
+						result = insert(val);
+						if (result == Const::ZSC_REC_SUCC) {
+							result.append(msgFromPrimary);
+						}
 					}
-				}
-			} else {
-				//check the key-value pair with primary
-				string msgFromPrimay;
-				string status = check_exists_with_primary(zpack.key(), msgFromPrimay);
-				if (status == Const::ZSC_REC_SUCC) {
-					ZPack val;
-					val.ParseFromString(msgFromPrimay);
-					val.set_opcode(Const::ZSC_OPC_INSERT_SELF);
-					result = insert(val);
-					if (result == Const::ZSC_REC_SUCC) {
-						result.append(msgFromPrimay);
-					}
+				} else {
+					//check the key-value pair with primary
+					string msgFromPrimay;
+					string status = check_exists_with_primary(zpack.key(), msgFromPrimay);
+					if (status == Const::ZSC_REC_SUCC) {
+						ZPack val;
+						val.ParseFromString(msgFromPrimay);
+						val.set_opcode(Const::ZSC_OPC_INSERT_SELF);
+						result = insert(val);
+						if (result == Const::ZSC_REC_SUCC) {
+							result.append(msgFromPrimay);
+						}
 
-				} else if (status == Const::ZSC_REC_NONEXISTKEY) {
-					result = Const::ZSC_REC_NONEXISTKEY;
-					result.append("Empty");
+					} else if (status == Const::ZSC_REC_NONEXISTKEY) {
+						result = Const::ZSC_REC_NONEXISTKEY;
+						result.append("Empty");
+					}
 				}
 			}
 		}
@@ -189,11 +191,11 @@ string HTWorker::run(const char *buf) {
 	} else if (zpack.opcode() == Const::ZSC_OPC_STCHGCB) {
 
 		result = state_change_callback(zpack);
-	} else if (zpack.opcode() == Const::ZSC_OPC_CMPVER && zpack.replicanum() == Const::ZSI_REP_REPLICA && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
+	} else if (ConfHandler::ZC_NUM_REPLICAS != 0 && zpack.opcode() == Const::ZSC_OPC_CMPVER && zpack.replicanum() == Const::ZSI_REP_REPLICA && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
 
 		//compare versionnum
 		result = compversion(zpack);
-	} else if (zpack.opcode() == Const::ZSC_OPC_EXISTS && zpack.replicanum() == Const::ZSI_REP_REPLICA && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
+	} else if (ConfHandler::ZC_NUM_REPLICAS != 0 && zpack.opcode() == Const::ZSC_OPC_EXISTS && zpack.replicanum() == Const::ZSI_REP_REPLICA && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
 
 		//check whether the key-value pair exists in primary
 		result = lookup(zpack);
@@ -350,7 +352,7 @@ string HTWorker::insert(const ZPack &zpack) {
 
 	string result = insert_shared(zpack);
 
-	if (result == Const::ZSC_REC_SUCC) {
+	if (ConfHandler::ZC_NUM_REPLICAS != 0 && result == Const::ZSC_REC_SUCC) {
 
 		ZPack msg = zpack;
 		//strong consistency
@@ -464,7 +466,7 @@ string HTWorker::append(const ZPack &zpack) {
 
 	string result = append_shared(zpack);
 
-	if (result == Const::ZSC_REC_SUCC) {
+	if (ConfHandler::ZC_NUM_REPLICAS != 0 && result == Const::ZSC_REC_SUCC) {
 
 		ZPack msg = zpack;
 		//strong consistency
@@ -712,7 +714,7 @@ string HTWorker::remove(const ZPack &zpack) {
 
 	string result = remove_shared(zpack);
 
-	if (result == Const::ZSC_REC_SUCC) {
+	if (ConfHandler::ZC_NUM_REPLICAS != 0 && result == Const::ZSC_REC_SUCC) {
 
 		ZPack msg = zpack;
 		//strong consistency
