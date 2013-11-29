@@ -105,11 +105,20 @@ bool TCPProxy::sendrecv(const HostEntity &he, const void *sendbuf, const size_t 
 
 	/*send message to server over client sock fd*/
 	int sentSize = sendTo(sock, sendbuf, sendcount);
+
+	cout << "Sent to " << he.host << " " << he.port << endl;
+
+	cout << "The sendrecv(), sentSize is " << sentSize << endl;
+
 	int sent_bool = sentSize == sendcount;
+
+	cout << "The sendrecv(), sent_bool is " << sent_bool << endl;
 
 	/*receive response from server over client sock fd*/
 	recvcount = recvFrom(sock, recvbuf);
 	int recv_bool = recvcount >= 0;
+
+	cout << "The sendrecv(), recv_bool is " << recv_bool << endl;
 
 	/*combine flags as value to be returned*/
 	return sent_bool && recv_bool;
