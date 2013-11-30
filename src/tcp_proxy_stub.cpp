@@ -97,7 +97,11 @@ bool TCPProxy::sendrecv(const HostEntity &he, const void *sendbuf, const size_t 
 	ZHTUtil zu;
 	string msg((char*) sendbuf, sendcount);
 
+	cout << "The destination is " << he.host << " " << he.port << endl;
+
 	int sock = getSockCached(he.host, he.port);
+
+	cout << "The sock is " << sock << endl;
 
 	reuseSock(sock);
 
