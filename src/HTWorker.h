@@ -122,7 +122,7 @@ private:
 	bool _instant_swap;
 
 private:
-	ProtoProxy *_proxy;
+	static ProtoProxy *_proxy;
 	int _msg_maxsize;
 
 private:

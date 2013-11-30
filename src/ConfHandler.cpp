@@ -253,10 +253,10 @@ void ConfHandler::setReplicaVectorInternal(int replicaNum, int neighborNum, int 
 		primaryHostIndex = ((hostIndex - indexDiff) + neighborNum) % neighborNum;
 		for (int i = 0; i <= replicaNum; i++){
 			replicaHostIndex = (primaryHostIndex + i) % neighborNum;
-			if (replicaHostIndex != hostIndex){
+			//if (replicaHostIndex != hostIndex){
 				ZHTUtil zu;
 				replicVector.push_back(zu.builtReplicaEntity(replicaHostIndex, portDiff * i));
-			}
+			//}
 		}
 	}
 }
@@ -348,7 +348,7 @@ int ConfHandler::getServerHostIndex() {
 	int i = 0;
 	for (i = 0; i < listSize; i++) {
 		host = ConfHandler::NeighborVector.at(i);
-		if (!strcmp(host.name().c_str(), hostName) || !strcmp(host.name().c_str(), inet_ntoa(**addr))) {
+		if (!strcmp(host.name().c_str(), hostInfo->h_name) || !strcmp(host.name().c_str(), inet_ntoa(**addr))) {
 			break;
 		}
 	}

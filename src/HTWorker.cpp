@@ -68,6 +68,8 @@ HTWorker::QUEUE* HTWorker::PQUEUE = new QUEUE();
 bool HTWorker::INIT_SCCB_MUTEX = false;
 pthread_mutex_t HTWorker::SCCB_MUTEX;
 
+ProtoProxy* HTWorker::_proxy = NULL;
+
 HTWorker::HTWorker() :
 		_stub(NULL), _instant_swap(get_instant_swap()) {
 
@@ -90,10 +92,10 @@ HTWorker::HTWorker(const ProtoAddr& addr, const ProtoStub* const stub) :
 
 HTWorker::~HTWorker() {
 
-	if (_proxy != NULL) {
-		delete _proxy;
-		_proxy = NULL;
-	}
+//	if (_proxy != NULL) {
+//		delete _proxy;
+//		_proxy = NULL;
+//	}
 }
 
 string HTWorker::run(const char *buf) {
@@ -322,7 +324,7 @@ string HTWorker::insert(const ZPack &zpack) {
 
 		ZPack msg = zpack;
 		//strong consistency
-		strong_consistency(msg);
+		//strong_consistency(msg);
 
 		//eventual consistency
 		eventual_consistency(msg);
@@ -487,7 +489,7 @@ string HTWorker::append(const ZPack &zpack) {
 
 		ZPack msg = zpack;
 		//strong consistency
-		strong_consistency(msg);
+		//strong_consistency(msg);
 
 		//eventual consistency
 		eventual_consistency(msg);
@@ -554,7 +556,7 @@ void *HTWorker::threaded_eventual_consistnecy(void *arg) {
 		else
 			pwta->_zpack.set_replicanum(Const::ZSI_REP_REPLICA);
 
-		ConfHandler::HIT receiver = ConfHandler::ReplicaVector.begin() + ConfHandler::REPLICA_VECTOR_POSITION;
+		ConfHandler::HIT receiver = ConfHandler::ReplicaVector.begin() + ConfHandler::REPLICA_VECTOR_POSITION + 1;
 		string msg = pwta->_zpack.SerializeAsString();
 		char *buf = (char*) calloc(pwta->_msg_maxsize, sizeof(char));
 		size_t msz =pwta-> _msg_maxsize;
@@ -745,7 +747,7 @@ string HTWorker::remove(const ZPack &zpack) {
 
 		ZPack msg = zpack;
 		//strong consistency
-		strong_consistency(msg);
+		//strong_consistency(msg);
 
 		//eventual consistency
 		eventual_consistency(msg);
