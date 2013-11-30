@@ -526,6 +526,8 @@ void HTWorker::eventual_consistency(ZPack &zpack) {
 
 			cout << "update copy with replica" << endl;
 
+			cout << "The proxy is " << _proxy << endl;
+
 			lock_guard lock(&SCCB_MUTEX);
 			WorkerThreadArg *wta = new WorkerThreadArg(zpack, _addr, _stub, _proxy, _msg_maxsize);
 			PQUEUE->push(wta); //queue the WorkerThreadArg to be used in thread function

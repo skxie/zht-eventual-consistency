@@ -91,6 +91,8 @@ bool TCPProxy::sendrecv(const void *sendbuf, const size_t sendcount,
 bool TCPProxy::sendrecv(const HostEntity &he, const void *sendbuf, const size_t sendcount,
 			void *recvbuf, size_t &recvcount) {
 
+	cout << "try to send" << endl;
+
 	/*get client sock fd*/
 	ZHTUtil zu;
 	string msg((char*) sendbuf, sendcount);
@@ -103,10 +105,10 @@ bool TCPProxy::sendrecv(const HostEntity &he, const void *sendbuf, const size_t 
 	pthread_mutex_t *sock_mutex = getSockMutex(he.host, he.port);
 	lock_guard lock(sock_mutex);
 
+	cout << "Sent to " << he.host << " " << he.port << endl;
+
 	/*send message to server over client sock fd*/
 	int sentSize = sendTo(sock, sendbuf, sendcount);
-
-	cout << "Sent to " << he.host << " " << he.port << endl;
 
 	cout << "The sendrecv(), sentSize is " << sentSize << endl;
 
