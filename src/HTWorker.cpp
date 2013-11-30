@@ -560,6 +560,7 @@ void *HTWorker::threaded_eventual_consistnecy(void *arg) {
 		cout << "The receiver for eventual is " << receiver->host << " " << receiver->port << endl;
 		cout << "The operation code for eventual is " << pwta->_zpack.opcode() << endl;
 		cout << "The zpack would be transferred is " << msg << endl;
+		cout << "The proxy is " << pwta->_proxy << endl;
 
 		pwta->_proxy->sendrecv(*receiver, msg.c_str(), msg.size(), buf, msz);
 
@@ -786,6 +787,11 @@ int HTWorker::init_proxy() {
 	_msg_maxsize = Env::get_msg_maxsize();
 
 	_proxy = ProxyStubFactory::createProxy();
+
+	if (_proxy == 0)
+		cout << "The proxy start unsuccessfully" << endl;
+	else
+		cout << "The proxy start successfully" << endl;
 
 	if (_proxy == 0)
 		return -1;
