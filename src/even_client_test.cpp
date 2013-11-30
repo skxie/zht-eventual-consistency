@@ -56,7 +56,8 @@ void init_packages() {
 	for (int i = 0; i < numOfOps; i++) {
 
 		Package package;
-		package.set_virtualpath(HashUtil::randomString(lenString)); //as key
+		//package.set_virtualpath(HashUtil::randomString(lenString)); //as key
+		package.set_virtualpath("ABC"); //as key
 		package.set_isdir(true);
 		package.set_replicanum(5); //orginal--Note: never let it be nagative!!!
 		package.set_realfullpath(

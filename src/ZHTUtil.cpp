@@ -68,9 +68,9 @@ HostEntity ZHTUtil::getHostEntityByKey(const string& msg) {
 		/*randomly generate the index from all replicas*/
 		srand(time(NULL));
 		replicaNum = rand() % numOfReplica;
-		//replicaNum = 1;
+		replicaNum = 1;
 		index = (index + replicaNum) % (numOfReplica + 1);
-		//index = 0;
+		index = 0;
 		int portDiff = ConfHandler::getPortDiffFromConf();
 		ConfEntry ce = ConfHandler::NeighborVector.at(index);
 

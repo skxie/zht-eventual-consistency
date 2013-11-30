@@ -120,7 +120,7 @@ string HTWorker::run(const char *buf) {
 			if (res_code == Const::ZSC_REC_SUCC) {
 				zpack.set_versionnum(extract_versionnum(result)+1);
 			} else {
-				zpack.set_versionnum(0);
+				zpack.set_versionnum(1);
 			}
 			zpack.set_opcode(Const::ZSC_OPC_INSERT);
 		}
@@ -136,7 +136,7 @@ string HTWorker::run(const char *buf) {
 			if (res_code == Const::ZSC_REC_SUCC) {
 				zpack.set_versionnum(extract_versionnum(result)+1);
 			} else {
-				zpack.set_versionnum(0);
+				zpack.set_versionnum(1);
 			}
 			zpack.set_opcode(Const::ZSC_OPC_APPEND);
 		}
@@ -174,7 +174,7 @@ string HTWorker::run(const char *buf) {
 
 int HTWorker::extract_versionnum(const string &returnStr) {
 
-	int vn = -1;
+	int vn = 0;
 	StrTokenizer strtok(returnStr, ":");
 
 	if (strtok.has_more_tokens()) {
@@ -421,7 +421,7 @@ string HTWorker::lookup(ZPack &zpack) {
 			string result_code = result.substr(0, 3);
 			string result_zpack = result.substr(3);
 			int versionNum = extract_versionnum(result_zpack);
-			if (versionNum != -1) {
+			if (versionNum != 0) {
 				//check versionnum with primary
 				string msgFromPrimary;
 				string status = compare_versionnum_with_primary(zpack.key(), versionNum, msgFromPrimary);

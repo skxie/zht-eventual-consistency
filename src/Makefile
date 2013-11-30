@@ -1,4 +1,4 @@
-TARGETS = zht_ctest zht_cpptest zht_ben zhtserver libzht.a c_zhtclient_threaded_test cpp_zhtclient_threaded_test c_zhtclient_lanl_threaded even_client_test
+TARGETS = zht_ctest zht_cpptest zht_ben zhtserver libzht.a c_zhtclient_threaded_test cpp_zhtclient_threaded_test c_zhtclient_lanl_threaded even_client_test even_test
 CC = gcc
 CCFLAGS = -g -I${USER_INCLUDE} -L${USER_LIB} -DPF_INET -DBIG_MSG -DSOCKET_CACHE -DSCCB
 #CCFLAGS = -g -I${USER_INCLUDE} -L${USER_LIB} -DPF_INET -DBIG_MSG -DTHREADED_SERVE -DSOCKET_CACHE -DSCCB
@@ -65,6 +65,13 @@ ProxyStubFactory.o proxy_stub.o ip_proxy_stub.o mq_proxy_stub.o ipc_plus.o tcp_p
 ZHTUtil.o Env.o Util.o \
 HTWorker.o StrTokenizer.o
 	$(CC) $(CCFLAGS) -o $@ $^ $(LIBFLAGS)
+	
+even_test: even_test.o lock_guard.o cpp_zhtclient.o meta.pb-c.o lru_cache.o meta.pb.o zpack.pb.o novoht.o bigdata_transfer.o\
+Const.o ConfHandler.o ConfEntry.o \
+ProxyStubFactory.o proxy_stub.o ip_proxy_stub.o mq_proxy_stub.o ipc_plus.o tcp_proxy_stub.o udp_proxy_stub.o \
+ZHTUtil.o Env.o Util.o \
+HTWorker.o StrTokenizer.o
+	$(CC) $(CCFLAGS) -o $@ $^ $(LIBFLAGS)
 
 
 zhtserver: ZHTServer.o lock_guard.o meta.pb-c.o lru_cache.o meta.pb.o zpack.pb.o novoht.o bigdata_transfer.o\
@@ -97,6 +104,7 @@ cpp_zhtclient_test.o: cpp_zhtclient_test.cpp
 benchmark_client.o: benchmark_client.cpp
 cpp_zhtclient.o: cpp_zhtclient.cpp
 even_client_test.o: even_client_test.cpp
+even_test.o: even_test.cpp
 
 c_zhtclient.o: c_zhtclient.cpp
 c_zhtclientStd.o: c_zhtclientStd.cpp
