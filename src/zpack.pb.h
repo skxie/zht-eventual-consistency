@@ -143,37 +143,33 @@ class ZPack : public ::google::protobuf::Message {
   inline ::std::string* mutable_lease();
   inline ::std::string* release_lease();
   
-  // optional bool valnull = 6;
+  // optional uint32 replicanum = 6;
+  inline bool has_replicanum() const;
+  inline void clear_replicanum();
+  static const int kReplicanumFieldNumber = 6;
+  inline ::google::protobuf::uint32 replicanum() const;
+  inline void set_replicanum(::google::protobuf::uint32 value);
+  
+  // optional uint32 versionnum = 7;
+  inline bool has_versionnum() const;
+  inline void clear_versionnum();
+  static const int kVersionnumFieldNumber = 7;
+  inline ::google::protobuf::uint32 versionnum() const;
+  inline void set_versionnum(::google::protobuf::uint32 value);
+  
+  // optional bool valnull = 8;
   inline bool has_valnull() const;
   inline void clear_valnull();
-  static const int kValnullFieldNumber = 6;
+  static const int kValnullFieldNumber = 8;
   inline bool valnull() const;
   inline void set_valnull(bool value);
   
-  // optional bool newvalnull = 7;
+  // optional bool newvalnull = 9;
   inline bool has_newvalnull() const;
   inline void clear_newvalnull();
-  static const int kNewvalnullFieldNumber = 7;
+  static const int kNewvalnullFieldNumber = 9;
   inline bool newvalnull() const;
   inline void set_newvalnull(bool value);
-  
-  // optional bytes replicanum = 8;
-  inline bool has_replicanum() const;
-  inline void clear_replicanum();
-  static const int kReplicanumFieldNumber = 8;
-  inline const ::std::string& replicanum() const;
-  inline void set_replicanum(const ::std::string& value);
-  inline void set_replicanum(const char* value);
-  inline void set_replicanum(const void* value, size_t size);
-  inline ::std::string* mutable_replicanum();
-  inline ::std::string* release_replicanum();
-  
-  // optional int32 versionnum = 9;
-  inline bool has_versionnum() const;
-  inline void clear_versionnum();
-  static const int kVersionnumFieldNumber = 9;
-  inline ::google::protobuf::int32 versionnum() const;
-  inline void set_versionnum(::google::protobuf::int32 value);
   
   // @@protoc_insertion_point(class_scope:ZPack)
  private:
@@ -187,14 +183,14 @@ class ZPack : public ::google::protobuf::Message {
   inline void clear_has_newval();
   inline void set_has_lease();
   inline void clear_has_lease();
-  inline void set_has_valnull();
-  inline void clear_has_valnull();
-  inline void set_has_newvalnull();
-  inline void clear_has_newvalnull();
   inline void set_has_replicanum();
   inline void clear_has_replicanum();
   inline void set_has_versionnum();
   inline void clear_has_versionnum();
+  inline void set_has_valnull();
+  inline void clear_has_valnull();
+  inline void set_has_newvalnull();
+  inline void clear_has_newvalnull();
   
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
   
@@ -203,10 +199,10 @@ class ZPack : public ::google::protobuf::Message {
   ::std::string* val_;
   ::std::string* newval_;
   ::std::string* lease_;
+  ::google::protobuf::uint32 replicanum_;
+  ::google::protobuf::uint32 versionnum_;
   bool valnull_;
   bool newvalnull_;
-  ::google::protobuf::int32 versionnum_;
-  ::std::string* replicanum_;
   
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
@@ -515,15 +511,59 @@ inline ::std::string* ZPack::release_lease() {
   }
 }
 
-// optional bool valnull = 6;
-inline bool ZPack::has_valnull() const {
+// optional uint32 replicanum = 6;
+inline bool ZPack::has_replicanum() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
-inline void ZPack::set_has_valnull() {
+inline void ZPack::set_has_replicanum() {
   _has_bits_[0] |= 0x00000020u;
 }
-inline void ZPack::clear_has_valnull() {
+inline void ZPack::clear_has_replicanum() {
   _has_bits_[0] &= ~0x00000020u;
+}
+inline void ZPack::clear_replicanum() {
+  replicanum_ = 0u;
+  clear_has_replicanum();
+}
+inline ::google::protobuf::uint32 ZPack::replicanum() const {
+  return replicanum_;
+}
+inline void ZPack::set_replicanum(::google::protobuf::uint32 value) {
+  set_has_replicanum();
+  replicanum_ = value;
+}
+
+// optional uint32 versionnum = 7;
+inline bool ZPack::has_versionnum() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void ZPack::set_has_versionnum() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void ZPack::clear_has_versionnum() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void ZPack::clear_versionnum() {
+  versionnum_ = 0u;
+  clear_has_versionnum();
+}
+inline ::google::protobuf::uint32 ZPack::versionnum() const {
+  return versionnum_;
+}
+inline void ZPack::set_versionnum(::google::protobuf::uint32 value) {
+  set_has_versionnum();
+  versionnum_ = value;
+}
+
+// optional bool valnull = 8;
+inline bool ZPack::has_valnull() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void ZPack::set_has_valnull() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void ZPack::clear_has_valnull() {
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void ZPack::clear_valnull() {
   valnull_ = false;
@@ -537,15 +577,15 @@ inline void ZPack::set_valnull(bool value) {
   valnull_ = value;
 }
 
-// optional bool newvalnull = 7;
+// optional bool newvalnull = 9;
 inline bool ZPack::has_newvalnull() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void ZPack::set_has_newvalnull() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void ZPack::clear_has_newvalnull() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void ZPack::clear_newvalnull() {
   newvalnull_ = false;
@@ -557,86 +597,6 @@ inline bool ZPack::newvalnull() const {
 inline void ZPack::set_newvalnull(bool value) {
   set_has_newvalnull();
   newvalnull_ = value;
-}
-
-// optional bytes replicanum = 8;
-inline bool ZPack::has_replicanum() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
-}
-inline void ZPack::set_has_replicanum() {
-  _has_bits_[0] |= 0x00000080u;
-}
-inline void ZPack::clear_has_replicanum() {
-  _has_bits_[0] &= ~0x00000080u;
-}
-inline void ZPack::clear_replicanum() {
-  if (replicanum_ != &::google::protobuf::internal::kEmptyString) {
-    replicanum_->clear();
-  }
-  clear_has_replicanum();
-}
-inline const ::std::string& ZPack::replicanum() const {
-  return *replicanum_;
-}
-inline void ZPack::set_replicanum(const ::std::string& value) {
-  set_has_replicanum();
-  if (replicanum_ == &::google::protobuf::internal::kEmptyString) {
-    replicanum_ = new ::std::string;
-  }
-  replicanum_->assign(value);
-}
-inline void ZPack::set_replicanum(const char* value) {
-  set_has_replicanum();
-  if (replicanum_ == &::google::protobuf::internal::kEmptyString) {
-    replicanum_ = new ::std::string;
-  }
-  replicanum_->assign(value);
-}
-inline void ZPack::set_replicanum(const void* value, size_t size) {
-  set_has_replicanum();
-  if (replicanum_ == &::google::protobuf::internal::kEmptyString) {
-    replicanum_ = new ::std::string;
-  }
-  replicanum_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ZPack::mutable_replicanum() {
-  set_has_replicanum();
-  if (replicanum_ == &::google::protobuf::internal::kEmptyString) {
-    replicanum_ = new ::std::string;
-  }
-  return replicanum_;
-}
-inline ::std::string* ZPack::release_replicanum() {
-  clear_has_replicanum();
-  if (replicanum_ == &::google::protobuf::internal::kEmptyString) {
-    return NULL;
-  } else {
-    ::std::string* temp = replicanum_;
-    replicanum_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-    return temp;
-  }
-}
-
-// optional int32 versionnum = 9;
-inline bool ZPack::has_versionnum() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
-}
-inline void ZPack::set_has_versionnum() {
-  _has_bits_[0] |= 0x00000100u;
-}
-inline void ZPack::clear_has_versionnum() {
-  _has_bits_[0] &= ~0x00000100u;
-}
-inline void ZPack::clear_versionnum() {
-  versionnum_ = 0;
-  clear_has_versionnum();
-}
-inline ::google::protobuf::int32 ZPack::versionnum() const {
-  return versionnum_;
-}
-inline void ZPack::set_versionnum(::google::protobuf::int32 value) {
-  set_has_versionnum();
-  versionnum_ = value;
 }
 
 

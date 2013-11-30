@@ -49,7 +49,7 @@ void   zpack__free_unpacked
   PROTOBUF_C_ASSERT (message->base.descriptor == &zpack__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-static const ProtobufCFieldDescriptor zpack__field_descriptors[7] =
+static const ProtobufCFieldDescriptor zpack__field_descriptors[9] =
 {
   {
     "opcode",
@@ -100,8 +100,44 @@ static const ProtobufCFieldDescriptor zpack__field_descriptors[7] =
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "valnull",
+    "lease",
     5,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_BYTES,
+    PROTOBUF_C_OFFSETOF(ZPack, has_lease),
+    PROTOBUF_C_OFFSETOF(ZPack, lease),
+    NULL,
+    NULL,
+    0,            /* packed */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "replicanum",
+    6,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_UINT32,
+    PROTOBUF_C_OFFSETOF(ZPack, has_replicanum),
+    PROTOBUF_C_OFFSETOF(ZPack, replicanum),
+    NULL,
+    NULL,
+    0,            /* packed */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "versionnum",
+    7,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_UINT32,
+    PROTOBUF_C_OFFSETOF(ZPack, has_versionnum),
+    PROTOBUF_C_OFFSETOF(ZPack, versionnum),
+    NULL,
+    NULL,
+    0,            /* packed */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "valnull",
+    8,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_BOOL,
     PROTOBUF_C_OFFSETOF(ZPack, has_valnull),
@@ -113,7 +149,7 @@ static const ProtobufCFieldDescriptor zpack__field_descriptors[7] =
   },
   {
     "newvalnull",
-    6,
+    9,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_BOOL,
     PROTOBUF_C_OFFSETOF(ZPack, has_newvalnull),
@@ -123,32 +159,22 @@ static const ProtobufCFieldDescriptor zpack__field_descriptors[7] =
     0,            /* packed */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
-  {
-    "replicanum",
-    7,
-    PROTOBUF_C_LABEL_OPTIONAL,
-    PROTOBUF_C_TYPE_INT32,
-    PROTOBUF_C_OFFSETOF(ZPack, has_replicanum),
-    PROTOBUF_C_OFFSETOF(ZPack, replicanum),
-    NULL,
-    NULL,
-    0,            /* packed */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
 };
 static const unsigned zpack__field_indices_by_name[] = {
   1,   /* field[1] = key */
+  4,   /* field[4] = lease */
   3,   /* field[3] = newval */
-  5,   /* field[5] = newvalnull */
+  8,   /* field[8] = newvalnull */
   0,   /* field[0] = opcode */
-  6,   /* field[6] = replicanum */
+  5,   /* field[5] = replicanum */
   2,   /* field[2] = val */
-  4,   /* field[4] = valnull */
+  7,   /* field[7] = valnull */
+  6,   /* field[6] = versionnum */
 };
 static const ProtobufCIntRange zpack__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 7 }
+  { 0, 9 }
 };
 const ProtobufCMessageDescriptor zpack__descriptor =
 {
@@ -158,7 +184,7 @@ const ProtobufCMessageDescriptor zpack__descriptor =
   "ZPack",
   "",
   sizeof(ZPack),
-  7,
+  9,
   zpack__field_descriptors,
   zpack__field_indices_by_name,
   1,  zpack__number_ranges,

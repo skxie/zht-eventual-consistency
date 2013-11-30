@@ -55,6 +55,11 @@ HostEntity ZHTUtil::getHostEntityByKey(const string& msg) {
 	zpack.ParseFromString(msg); //to debug
 	int replicaNum = 0;
 
+	/*
+	printf("{%s}:{%s}:{%s,%s}:{%u, %u}\n", zpack.opcode().c_str(), zpack.key().c_str(), zpack.val().c_str(),
+			zpack.newval().c_str()), zpack.replicanum(), zpack.versionnum();
+	*/
+
 	uint64_t hascode = HashUtil::genHash(zpack.key());
 	size_t node_size = ConfHandler::NeighborVector.size();
 	int index = hascode % node_size;

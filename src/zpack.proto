@@ -4,8 +4,9 @@ message ZPack{
 	optional bytes val = 3;
 	optional bytes newval = 4; //used by compare_swap
 	optional bytes lease = 5; //used by state_changed_callback
-	optional bool valnull = 6;	
-	optional bool newvalnull = 7; //used by compare_swap
-	optional bytes replicanum = 8;
-	optional int32 versionnum = 9;		 
+	optional uint32 replicanum = 6;
+	optional uint32 versionnum = 7;
+	optional bool valnull = 8;	
+	optional bool newvalnull = 9; //used by compare_swap
+
 }
