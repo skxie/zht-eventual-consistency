@@ -112,7 +112,7 @@ string HTWorker::run(const char *buf) {
 
 	} else if (zpack.opcode() == Const::ZSC_OPC_INSERT) {
 
-		if (zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
+		if (zpack.replicanum() == Const::ZSC_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
 			zpack.set_opcode(Const::ZSC_OPC_LOOKUP);
 			result = lookup_shared(zpack);
 			string res_code = result.substr(0, 3);
@@ -128,7 +128,7 @@ string HTWorker::run(const char *buf) {
 
 	} else if (zpack.opcode() == Const::ZSC_OPC_APPEND) {
 
-		if(zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION == 0){ //request received by primary and sent by client
+		if(zpack.replicanum() == Const::ZSC_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION == 0){ //request received by primary and sent by client
 			zpack.set_opcode(Const::ZSC_OPC_LOOKUP);
 			result = lookup_shared(zpack);
 			string res_code = result.substr(0, 3);
@@ -154,12 +154,12 @@ string HTWorker::run(const char *buf) {
 
 		result = state_change_callback(zpack);
 
-	} else if (ConfHandler::ZC_NUM_REPLICAS > 0 && zpack.opcode() == Const::ZSC_OPC_CMPVER && zpack.replicanum() == Const::ZSI_REP_REPLICA && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
+	} else if (ConfHandler::ZC_NUM_REPLICAS > 0 && zpack.opcode() == Const::ZSC_OPC_CMPVER && zpack.replicanum() == Const::ZSC_REP_REPLICA && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
 
 		//compare versionnum
 		result = compversion(zpack);
 
-	} else if (ConfHandler::ZC_NUM_REPLICAS > 0 && zpack.opcode() == Const::ZSC_OPC_EXISTS && zpack.replicanum() == Const::ZSI_REP_REPLICA && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
+	} else if (ConfHandler::ZC_NUM_REPLICAS > 0 && zpack.opcode() == Const::ZSC_OPC_EXISTS && zpack.replicanum() == Const::ZSC_REP_REPLICA && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
 
 		//check whether the key-value pair exists in primary
 		result = checkexists(zpack);
@@ -205,7 +205,7 @@ string HTWorker::check_exists_with_primary(const string &key, string &msgFromPri
 	//generate a zpack with versionnum
 	ZPack zpack;
 	zpack.set_opcode(Const::ZSC_OPC_EXISTS);
-	zpack.set_replicanum(Const::ZSI_REP_REPLICA);
+	zpack.set_replicanum(Const::ZSC_REP_REPLICA);
 
 	if (key.empty())
 		return Const::ZSC_REC_EMPTYKEY; //-1, empty key not allowed.
@@ -247,7 +247,7 @@ string HTWorker::compare_versionnum_with_primary(const string &key, const int ve
 	//generate a zpack with versionnum
 	ZPack zpack;
 	zpack.set_opcode(Const::ZSC_OPC_CMPVER);
-	zpack.set_replicanum(Const::ZSI_REP_REPLICA);
+	zpack.set_replicanum(Const::ZSC_REP_REPLICA);
 
 	if (key.empty())
 		return Const::ZSC_REC_EMPTYKEY; //-1, empty key not allowed.
@@ -316,9 +316,6 @@ string HTWorker::insert_shared(const ZPack &zpack) {
 string HTWorker::insert(const ZPack &zpack) {
 
 	string result = insert_shared(zpack);
-
-	cout << "The result of insert is " << result << endl;
-	cout << "THe item " << zpack.SerializeAsString() << " has been inserted" << endl;
 
 	if (ConfHandler::ZC_NUM_REPLICAS > 0 && result == Const::ZSC_REC_SUCC) {
 
@@ -419,11 +416,8 @@ string HTWorker::lookup(ZPack &zpack) {
 
 	string result = lookup_shared(zpack);
 
-	cout << "The number of replica is " << ConfHandler::ZC_NUM_REPLICAS << endl;
-	cout << "The result of lookup is " << result << endl;
-
 	if (ConfHandler::ZC_NUM_REPLICAS > 0) {
-		if (zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION != 0) {
+		if (zpack.replicanum() == Const::ZSC_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION != 0) {
 			string result_code = result.substr(0, 3);
 			string result_zpack = result.substr(3);
 			int versionNum = extract_versionnum(result_zpack);
@@ -449,8 +443,6 @@ string HTWorker::lookup(ZPack &zpack) {
 				}
 			} else {
 				//check the key-value pair with primary
-
-				cout << "Not found in itself, try to update from primary" << endl;
 
 				string msgFromPrimay;
 				string status = check_exists_with_primary(zpack.key(), msgFromPrimay);
@@ -532,10 +524,10 @@ string HTWorker::append(const ZPack &zpack) {
 
 void HTWorker::strong_consistency(ZPack &zpack) {
 
-	if (ConfHandler::ZC_NUM_REPLICAS > 0 && zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
+	if (ConfHandler::ZC_NUM_REPLICAS > 0 && zpack.replicanum() == Const::ZSC_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
 
 		if (zpack.opcode() == Const::ZSC_OPC_INSERT || zpack.opcode() == Const::ZSC_OPC_REMOVE || zpack.opcode() == Const::ZSC_OPC_APPEND) {
-			zpack.set_replicanum(Const::ZSI_REP_PRIM);
+			zpack.set_replicanum(Const::ZSC_REP_PRIM);
 			string msg = zpack.SerializeAsString();
 			char *buf = (char*) calloc(_msg_maxsize, sizeof(char));
 			size_t msz = _msg_maxsize;
@@ -552,10 +544,6 @@ void HTWorker::eventual_consistency(ZPack &zpack) {
 	if (ConfHandler::ZC_NUM_REPLICAS > 0 && ConfHandler::REPLICA_VECTOR_POSITION < ConfHandler::ZC_NUM_REPLICAS) {
 
 		if (zpack.opcode() == Const::ZSC_OPC_INSERT || zpack.opcode() == Const::ZSC_OPC_REMOVE || zpack.opcode() == Const::ZSC_OPC_APPEND) {
-
-			cout << "update copy with replica" << endl;
-
-			cout << "The proxy is " << _proxy << endl;
 
 			lock_guard lock(&SCCB_MUTEX);
 			WorkerThreadArg *wta = new WorkerThreadArg(zpack, _addr, _stub, _proxy, _msg_maxsize);
@@ -579,19 +567,14 @@ void *HTWorker::threaded_eventual_consistnecy(void *arg) {
 		lock.unlock();
 
 		if (ConfHandler::REPLICA_VECTOR_POSITION == 0)
-			pwta->_zpack.set_replicanum(Const::ZSI_REP_PRIM);
+			pwta->_zpack.set_replicanum(Const::ZSC_REP_PRIM);
 		else
-			pwta->_zpack.set_replicanum(Const::ZSI_REP_REPLICA);
+			pwta->_zpack.set_replicanum(Const::ZSC_REP_REPLICA);
 
 		ConfHandler::HIT receiver = ConfHandler::ReplicaVector.begin() + ConfHandler::REPLICA_VECTOR_POSITION + 1;
 		string msg = pwta->_zpack.SerializeAsString();
 		char *buf = (char*) calloc(pwta->_msg_maxsize, sizeof(char));
 		size_t msz =pwta-> _msg_maxsize;
-
-		cout << "The receiver for eventual is " << receiver->host << " " << receiver->port << endl;
-		cout << "The operation code for eventual is " << pwta->_zpack.opcode() << endl;
-		cout << "The zpack would be transferred is " << msg << endl;
-		cout << "The proxy is " << pwta->_proxy << endl;
 
 		pwta->_proxy->sendrecv(*receiver, msg.c_str(), msg.size(), buf, msz);
 
@@ -818,11 +801,6 @@ int HTWorker::init_proxy() {
 	_msg_maxsize = Env::get_msg_maxsize();
 
 	_proxy = ProxyStubFactory::createProxy();
-
-	if (_proxy == 0)
-		cout << "The proxy start unsuccessfully" << endl;
-	else
-		cout << "The proxy start successfully" << endl;
 
 	if (_proxy == 0)
 		return -1;

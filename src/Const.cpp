@@ -132,9 +132,9 @@ const string Const::ZSC_REC_SECDTRY = "-97";
 const string Const::ZSC_REC_UOPC = "-98";
 const string Const::ZSC_REC_UNPR = "-99";
 const string Const::ZSC_REC_SUCC = "000";
-const string Const::ZSC_REP_ORIG = "3";
-const string Const::ZSC_REP_PRIM = "5";
-const string Const::ZSC_REP_REPLICA = "7";
+const string Const::ZSC_REP_ORIG = "003";
+const string Const::ZSC_REP_PRIM = "005";
+const string Const::ZSC_REP_REPLICA = "007";
 
 const int Const::ZSI_OPC_LOOKUP = 1;
 const int Const::ZSI_OPC_REMOVE = 2;

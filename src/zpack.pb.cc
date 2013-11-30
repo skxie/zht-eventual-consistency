@@ -84,7 +84,7 @@ void protobuf_AddDesc_zpack_2eproto() {
     "\n\013zpack.proto\"\235\001\n\005ZPack\022\016\n\006opcode\030\001 \001(\014\022"
     "\013\n\003key\030\002 \001(\014\022\013\n\003val\030\003 \001(\014\022\016\n\006newval\030\004 \001("
     "\014\022\r\n\005lease\030\005 \001(\014\022\017\n\007valnull\030\006 \001(\010\022\022\n\nnew"
-    "valnull\030\007 \001(\010\022\022\n\nreplicanum\030\010 \001(\005\022\022\n\nver"
+    "valnull\030\007 \001(\010\022\022\n\nreplicanum\030\010 \001(\014\022\022\n\nver"
     "sionnum\030\t \001(\005", 173);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "zpack.proto", &protobuf_RegisterTypes);
@@ -138,7 +138,7 @@ void ZPack::SharedCtor() {
   lease_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   valnull_ = false;
   newvalnull_ = false;
-  replicanum_ = 0;
+  replicanum_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   versionnum_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -162,6 +162,9 @@ void ZPack::SharedDtor() {
   }
   if (lease_ != &::google::protobuf::internal::kEmptyString) {
     delete lease_;
+  }
+  if (replicanum_ != &::google::protobuf::internal::kEmptyString) {
+    delete replicanum_;
   }
   if (this != default_instance_) {
   }
@@ -216,7 +219,11 @@ void ZPack::Clear() {
     }
     valnull_ = false;
     newvalnull_ = false;
-    replicanum_ = 0;
+    if (has_replicanum()) {
+      if (replicanum_ != &::google::protobuf::internal::kEmptyString) {
+        replicanum_->clear();
+      }
+    }
   }
   if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     versionnum_ = 0;
@@ -328,19 +335,17 @@ bool ZPack::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(64)) goto parse_replicanum;
+        if (input->ExpectTag(66)) goto parse_replicanum;
         break;
       }
       
-      // optional int32 replicanum = 8;
+      // optional bytes replicanum = 8;
       case 8: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_replicanum:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &replicanum_)));
-          set_has_replicanum();
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_replicanum()));
         } else {
           goto handle_uninterpreted;
         }
@@ -422,9 +427,10 @@ void ZPack::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(7, this->newvalnull(), output);
   }
   
-  // optional int32 replicanum = 8;
+  // optional bytes replicanum = 8;
   if (has_replicanum()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(8, this->replicanum(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteBytes(
+      8, this->replicanum(), output);
   }
   
   // optional int32 versionnum = 9;
@@ -485,9 +491,11 @@ void ZPack::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(7, this->newvalnull(), target);
   }
   
-  // optional int32 replicanum = 8;
+  // optional bytes replicanum = 8;
   if (has_replicanum()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(8, this->replicanum(), target);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        8, this->replicanum(), target);
   }
   
   // optional int32 versionnum = 9;
@@ -551,10 +559,10 @@ int ZPack::ByteSize() const {
       total_size += 1 + 1;
     }
     
-    // optional int32 replicanum = 8;
+    // optional bytes replicanum = 8;
     if (has_replicanum()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
           this->replicanum());
     }
     

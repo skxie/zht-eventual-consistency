@@ -91,17 +91,11 @@ bool TCPProxy::sendrecv(const void *sendbuf, const size_t sendcount,
 bool TCPProxy::sendrecv(const HostEntity &he, const void *sendbuf, const size_t sendcount,
 			void *recvbuf, size_t &recvcount) {
 
-	cout << "try to send" << endl;
-
 	/*get client sock fd*/
 	ZHTUtil zu;
 	string msg((char*) sendbuf, sendcount);
 
-	cout << "The destination is " << he.host << " " << he.port << endl;
-
 	int sock = getSockCached(he.host, he.port);
-
-	cout << "The sock is " << sock << endl;
 
 	reuseSock(sock);
 
@@ -109,22 +103,14 @@ bool TCPProxy::sendrecv(const HostEntity &he, const void *sendbuf, const size_t 
 	pthread_mutex_t *sock_mutex = getSockMutex(he.host, he.port);
 	lock_guard lock(sock_mutex);
 
-	cout << "Sent to " << he.host << " " << he.port << endl;
-
 	/*send message to server over client sock fd*/
 	int sentSize = sendTo(sock, sendbuf, sendcount);
 
-	cout << "The sendrecv(), sentSize is " << sentSize << endl;
-
 	int sent_bool = sentSize == sendcount;
-
-	cout << "The sendrecv(), sent_bool is " << sent_bool << endl;
 
 	/*receive response from server over client sock fd*/
 	recvcount = recvFrom(sock, recvbuf);
 	int recv_bool = recvcount >= 0;
-
-	cout << "The sendrecv(), recv_bool is " << recv_bool << endl;
 
 	/*combine flags as value to be returned*/
 	return sent_bool && recv_bool;
@@ -162,11 +148,7 @@ int TCPProxy::getSockCached(const string& host, const uint& port) {
 
 		lock_guard lock(&CC_MUTEX);
 
-		cout << "make client socket" << endl;
-
 		sock = makeClientSocket(host, port);
-
-		cout << "The sock is " << sock << endl;
 
 		if (sock <= 0) {
 
@@ -192,8 +174,6 @@ int TCPProxy::getSockCached(const string& host, const uint& port) {
 
 int TCPProxy::makeClientSocket(const string& host, const uint& port) {
 
-	cout << "try make client socket" << endl;
-
 	struct sockaddr_in dest;
 	memset(&dest, 0, sizeof(struct sockaddr_in)); /*zero the struct*/
 	dest.sin_family = PF_INET; /*storing the server info in sockaddr_in structure*/
@@ -205,8 +185,6 @@ int TCPProxy::makeClientSocket(const string& host, const uint& port) {
 		herror(host.c_str());
 		return -1;
 	}
-
-	cout << "get host" << endl;
 
 	memcpy(&dest.sin_addr, hinfo->h_addr, sizeof(dest.sin_addr));
 

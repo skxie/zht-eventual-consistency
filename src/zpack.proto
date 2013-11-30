@@ -6,6 +6,6 @@ message ZPack{
 	optional bytes lease = 5; //used by state_changed_callback
 	optional bool valnull = 6;	
 	optional bool newvalnull = 7; //used by compare_swap
-	optional int32 replicanum = 8;
+	optional bytes replicanum = 8;
 	optional int32 versionnum = 9;		 
 }

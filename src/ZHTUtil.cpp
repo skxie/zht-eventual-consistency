@@ -69,8 +69,8 @@ HostEntity ZHTUtil::getHostEntityByKey(const string& msg) {
 		int portDiff = ConfHandler::getPortDiffFromConf();
 		ConfEntry ce = ConfHandler::NeighborVector.at(index);
 
-		cout << "The index for lookup is " << index << endl;
-		cout << "The host would be served for the lookup is " << ce.name() << " " << atoi(ce.value().c_str()) + replicaNum * portDiff << endl;
+		//cout << "The index for lookup is " << index << endl;
+		//cout << "The host would be served for the lookup is " << ce.name() << " " << atoi(ce.value().c_str()) + replicaNum * portDiff << endl;
 
 		return buildHostEntity(ce.name(), atoi(ce.value().c_str()) + replicaNum * portDiff);
 	}

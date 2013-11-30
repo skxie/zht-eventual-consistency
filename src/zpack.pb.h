@@ -157,12 +157,16 @@ class ZPack : public ::google::protobuf::Message {
   inline bool newvalnull() const;
   inline void set_newvalnull(bool value);
   
-  // optional int32 replicanum = 8;
+  // optional bytes replicanum = 8;
   inline bool has_replicanum() const;
   inline void clear_replicanum();
   static const int kReplicanumFieldNumber = 8;
-  inline ::google::protobuf::int32 replicanum() const;
-  inline void set_replicanum(::google::protobuf::int32 value);
+  inline const ::std::string& replicanum() const;
+  inline void set_replicanum(const ::std::string& value);
+  inline void set_replicanum(const char* value);
+  inline void set_replicanum(const void* value, size_t size);
+  inline ::std::string* mutable_replicanum();
+  inline ::std::string* release_replicanum();
   
   // optional int32 versionnum = 9;
   inline bool has_versionnum() const;
@@ -201,8 +205,8 @@ class ZPack : public ::google::protobuf::Message {
   ::std::string* lease_;
   bool valnull_;
   bool newvalnull_;
-  ::google::protobuf::int32 replicanum_;
   ::google::protobuf::int32 versionnum_;
+  ::std::string* replicanum_;
   
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
@@ -555,7 +559,7 @@ inline void ZPack::set_newvalnull(bool value) {
   newvalnull_ = value;
 }
 
-// optional int32 replicanum = 8;
+// optional bytes replicanum = 8;
 inline bool ZPack::has_replicanum() const {
   return (_has_bits_[0] & 0x00000080u) != 0;
 }
@@ -566,15 +570,51 @@ inline void ZPack::clear_has_replicanum() {
   _has_bits_[0] &= ~0x00000080u;
 }
 inline void ZPack::clear_replicanum() {
-  replicanum_ = 0;
+  if (replicanum_ != &::google::protobuf::internal::kEmptyString) {
+    replicanum_->clear();
+  }
   clear_has_replicanum();
 }
-inline ::google::protobuf::int32 ZPack::replicanum() const {
+inline const ::std::string& ZPack::replicanum() const {
+  return *replicanum_;
+}
+inline void ZPack::set_replicanum(const ::std::string& value) {
+  set_has_replicanum();
+  if (replicanum_ == &::google::protobuf::internal::kEmptyString) {
+    replicanum_ = new ::std::string;
+  }
+  replicanum_->assign(value);
+}
+inline void ZPack::set_replicanum(const char* value) {
+  set_has_replicanum();
+  if (replicanum_ == &::google::protobuf::internal::kEmptyString) {
+    replicanum_ = new ::std::string;
+  }
+  replicanum_->assign(value);
+}
+inline void ZPack::set_replicanum(const void* value, size_t size) {
+  set_has_replicanum();
+  if (replicanum_ == &::google::protobuf::internal::kEmptyString) {
+    replicanum_ = new ::std::string;
+  }
+  replicanum_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ZPack::mutable_replicanum() {
+  set_has_replicanum();
+  if (replicanum_ == &::google::protobuf::internal::kEmptyString) {
+    replicanum_ = new ::std::string;
+  }
   return replicanum_;
 }
-inline void ZPack::set_replicanum(::google::protobuf::int32 value) {
-  set_has_replicanum();
-  replicanum_ = value;
+inline ::std::string* ZPack::release_replicanum() {
+  clear_has_replicanum();
+  if (replicanum_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = replicanum_;
+    replicanum_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
 }
 
 // optional int32 versionnum = 9;

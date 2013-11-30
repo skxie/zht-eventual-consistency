@@ -276,7 +276,7 @@ string ZHTClient::commonOpInternal(const string &opcode, const string &key,
 
 	ZPack zpack;
 	zpack.set_opcode(opcode); //"001": lookup, "002": remove, "003": insert, "004": append, "005", compare_swap
-	zpack.set_replicanum(3);
+	zpack.set_replicanum(Const::ZSC_REP_ORIG);
 
 	if (key.empty())
 		return Const::ZSC_REC_EMPTYKEY; //-1, empty key not allowed.
@@ -307,10 +307,12 @@ string ZHTClient::commonOpInternal(const string &opcode, const string &key,
 
 	string msg = zpack.SerializeAsString();
 
-	/*ZPack tmp;
+	/*
+	ZPack tmp;
 	 tmp.ParseFromString(msg);
-	 printf("{%s}:{%s,%s}\n", tmp.key().c_str(), tmp.val().c_str(),
-	 tmp.newval().c_str());*/
+	 printf("{%s}:{%s,%s}:{%s, %d}\n", tmp.key().c_str(), tmp.val().c_str(),
+	 tmp.newval().c_str()), tmp.replicanum(), tmp.versionnum();
+	*/
 
 	char *buf = (char*) calloc(_msg_maxsize, sizeof(char));
 	size_t msz = _msg_maxsize;
