@@ -162,7 +162,11 @@ int TCPProxy::getSockCached(const string& host, const uint& port) {
 
 		lock_guard lock(&CC_MUTEX);
 
+		cout << "make client socket" << endl;
+
 		sock = makeClientSocket(host, port);
+
+		cout << "The sock is " << sock << endl;
 
 		if (sock <= 0) {
 
@@ -188,6 +192,8 @@ int TCPProxy::getSockCached(const string& host, const uint& port) {
 
 int TCPProxy::makeClientSocket(const string& host, const uint& port) {
 
+	cout << "try make client socket" << endl;
+
 	struct sockaddr_in dest;
 	memset(&dest, 0, sizeof(struct sockaddr_in)); /*zero the struct*/
 	dest.sin_family = PF_INET; /*storing the server info in sockaddr_in structure*/
@@ -199,6 +205,8 @@ int TCPProxy::makeClientSocket(const string& host, const uint& port) {
 		herror(host.c_str());
 		return -1;
 	}
+
+	cout << "get host" << endl;
 
 	memcpy(&dest.sin_addr, hinfo->h_addr, sizeof(dest.sin_addr));
 
