@@ -86,6 +86,7 @@ private:
 	string lookup_shared(const ZPack &zpack);
 	string append_shared(const ZPack &zpack);
 	string remove_shared(const ZPack &zpack);
+	string compversion_shared(const ZPack &zpack);
 
 private:
 	int extract_versionnum(const string &returnStr);

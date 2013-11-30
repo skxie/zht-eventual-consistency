@@ -162,7 +162,7 @@ string HTWorker::run(const char *buf) {
 	} else if (ConfHandler::ZC_NUM_REPLICAS > 0 && zpack.opcode() == Const::ZSC_OPC_EXISTS && zpack.replicanum() == Const::ZSI_REP_REPLICA && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
 
 		//check whether the key-value pair exists in primary
-		result = lookup_shared(zpack);
+		result = checkexists(zpack);
 
 	} else {
 
@@ -338,7 +338,35 @@ string HTWorker::insert(const ZPack &zpack) {
 #endif
 }
 
+
+
+string HTWorker::checkexists(const ZPack &zpack) {
+
+	string result = lookup_shared(zpack);
+
+#ifdef SCCB
+	_stub->sendBack(_addr, result.data(), result.size());
+	return "";
+#else
+	return result;
+#endif
+
+}
+
 string HTWorker::compversion(const ZPack &zpack) {
+
+	string result = compversion_shared(zpack);
+
+#ifdef SCCB
+	_stub->sendBack(_addr, result.data(), result.size());
+	return "";
+#else
+	return result;
+#endif
+
+}
+
+string HTWorker::compversion_shared(const ZPack &zpack) {
 
 	string result;
 
@@ -359,7 +387,6 @@ string HTWorker::compversion(const ZPack &zpack) {
 	result = Const::ZSC_REC_VERSIONCONFLICT;
 	result.append(lookup_result);
 
-	return result;
 }
 
 string HTWorker::lookup_shared(const ZPack &zpack) {
@@ -404,9 +431,9 @@ string HTWorker::lookup(ZPack &zpack) {
 				//check versionnum with primary
 				string msgFromPrimary;
 				string status = compare_versionnum_with_primary(zpack.key(), versionNum, msgFromPrimary);
-				if (status == Const::ZSC_REC_SUCC)
-					return result;
-				if (status == Const::ZSC_REC_NONEXISTKEY) {
+				if (status == Const::ZSC_REC_SUCC) {
+
+				} else if (status == Const::ZSC_REC_NONEXISTKEY) {
 					zpack.set_opcode(Const::ZSC_OPC_REMOVE_SELF);
 					result = remove_shared(zpack);
 					result = Const::ZSC_REC_NONEXISTKEY;

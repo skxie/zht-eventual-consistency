@@ -255,7 +255,8 @@ void ConfHandler::setReplicaVectorInternal(int replicaNum, int neighborNum, int 
 			replicaHostIndex = (primaryHostIndex + i) % neighborNum;
 			//if (replicaHostIndex != hostIndex){
 				ZHTUtil zu;
-				replicVector.push_back(zu.builtReplicaEntity(replicaHostIndex, portDiff * i));
+				int port = portDiff * i;
+				replicVector.push_back(zu.builtReplicaEntity(replicaHostIndex, port));
 			//}
 		}
 	}
