@@ -86,23 +86,18 @@ int test(string &zhtConf, string &neighborConf) {
 	Package pkg;
 	pkg.ParseFromString(pkgList[0]);
 
-	int ret = zc.insert(pkg.virtualpath(), pkgList[0]);
-
-	if (ret < 0) {
-		cout << "insert error" << endl;
-	} else
-		cout << "insert success" << endl;
-
-	ret = zc.insert(pkg.virtualpath(), pkgList[0]);
-
-	if (ret < 0) {
-		cout << "insert error" << endl;
-	} else
-		cout << "insert success" << endl;
+//	int ret = zc.insert(pkg.virtualpath(), pkgList[0]);
+//
+//	if (ret < 0) {
+//		cout << "insert error" << endl;
+//	} else
+//		cout << "insert success" << endl;
+//
+//	sleep(5);
 
 	string result;
 
-	ret = zc.lookup(pkg.virtualpath(), result);
+	int ret = zc.lookup(pkg.virtualpath(), result);
 
 	if (ret < 0) {
 		cout << "lookup error" << endl;
