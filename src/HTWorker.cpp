@@ -218,6 +218,18 @@ string HTWorker::check_exists_with_primary(const string &key, string &msgFromPri
 
 	//compare the zpack with versionnum with primary
 	ConfHandler::HIT primary = ConfHandler::ReplicaVector.begin();
+
+	cout << "check exist" << endl;
+	ConfHandler::HIT itself = ConfHandler::ReplicaVector.begin() + ConfHandler::REPLICA_VECTOR_POSITION;
+	cout << "send from " << itself->host << " " << itself->port << endl;
+	cout << "receiver " << primary->host << " " << primary->port << endl;
+
+	cout << "The whole replicaVector is" << endl;
+	int i = 0;
+	for (ConfHandler::HIT it = ConfHandler::ReplicaVector.begin(); it != ConfHandler::ReplicaVector.end(); it++) {
+		cout << "ReplicaVector " << i << ": " << it->host << " " << it->port << endl;
+	}
+
 	string msg = zpack.SerializeAsString();
 	char *buf = (char*) calloc(_msg_maxsize, sizeof(char));
 	size_t msz = _msg_maxsize;
@@ -261,6 +273,18 @@ string HTWorker::compare_versionnum_with_primary(const string &key, const int ve
 
 	//compare the zpack with versionnum with primary
 	ConfHandler::HIT primary = ConfHandler::ReplicaVector.begin();
+
+	cout << "compare version" << endl;
+	ConfHandler::HIT itself = ConfHandler::ReplicaVector.begin() + ConfHandler::REPLICA_VECTOR_POSITION;
+	cout << "send from " << itself->host << " " << itself->port << endl;
+	cout << "receiver " << primary->host << " " << primary->port << endl;
+
+	cout << "The whole replicaVector is" << endl;
+	int i = 0;
+	for (ConfHandler::HIT it = ConfHandler::ReplicaVector.begin(); it != ConfHandler::ReplicaVector.end(); it++) {
+		cout << "ReplicaVector " << i << ": " << it->host << " " << it->port << endl;
+	}
+
 	string msg = zpack.SerializeAsString();
 	char *buf = (char*) calloc(_msg_maxsize, sizeof(char));
 	size_t msz = _msg_maxsize;
