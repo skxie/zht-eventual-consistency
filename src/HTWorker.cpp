@@ -228,6 +228,7 @@ string HTWorker::check_exists_with_primary(const string &key, string &msgFromPri
 	int i = 0;
 	for (ConfHandler::HIT it = ConfHandler::ReplicaVector.begin(); it != ConfHandler::ReplicaVector.end(); it++) {
 		cout << "ReplicaVector " << i << ": " << it->host << " " << it->port << endl;
+		i++;
 	}
 
 	string msg = zpack.SerializeAsString();
@@ -283,6 +284,7 @@ string HTWorker::compare_versionnum_with_primary(const string &key, const int ve
 	int i = 0;
 	for (ConfHandler::HIT it = ConfHandler::ReplicaVector.begin(); it != ConfHandler::ReplicaVector.end(); it++) {
 		cout << "ReplicaVector " << i << ": " << it->host << " " << it->port << endl;
+		i++;
 	}
 
 	string msg = zpack.SerializeAsString();
@@ -340,6 +342,8 @@ string HTWorker::insert_shared(const ZPack &zpack) {
 string HTWorker::insert(const ZPack &zpack) {
 
 	string result = insert_shared(zpack);
+
+	cout << "The key used to insert is " << zpack.key() << endl;
 
 	if (ConfHandler::ZC_NUM_REPLICAS > 0 && result == Const::ZSC_REC_SUCC) {
 
@@ -439,6 +443,8 @@ string HTWorker::lookup_shared(const ZPack &zpack) {
 string HTWorker::lookup(ZPack &zpack) {
 
 	string result = lookup_shared(zpack);
+
+	cout << "lookup the key is " << zpack.key() << endl;
 
 	if (ConfHandler::ZC_NUM_REPLICAS > 0) {
 		if (zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION != 0) {
