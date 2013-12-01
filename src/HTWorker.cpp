@@ -482,14 +482,26 @@ string HTWorker::lookup(ZPack &zpack) {
 				string msgFromPrimay;
 				string status = check_exists_with_primary(zpack.key(), msgFromPrimay);
 				if (status == Const::ZSC_REC_SUCC) {
+
+					cout << "exist in primary" << endl;
+
 					ZPack val;
 					val.ParseFromString(msgFromPrimay);
 					val.set_opcode(Const::ZSC_OPC_INSERT_SELF);
+
+					cout << "try to update itself" << endl;
+
 					result = insert_shared(val);
+
+					cout << "The update result is " << result << endl;
+
 					if (result == Const::ZSC_REC_SUCC) {
 						result.append(msgFromPrimay);
 					}
 				} else if (status == Const::ZSC_REC_NONEXISTKEY) {
+
+					cout << "not exists in primary" << endl;
+
 					result = Const::ZSC_REC_NONEXISTKEY;
 					result.append("Empty");
 				}
