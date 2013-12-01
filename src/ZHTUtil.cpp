@@ -67,9 +67,9 @@ HostEntity ZHTUtil::getHostEntityByKey(const string& msg) {
 	if(zpack.opcode() == Const::ZSC_OPC_LOOKUP && numOfReplica > 0){
 		/*randomly generate the index from all replicas*/
 		srand(time(NULL));
-		replicaNum = rand() % numOfReplica;
+		replicaNum = rand() % (numOfReplica + 1);
 		//replicaNum = 1;
-		index = (index + replicaNum) % (numOfReplica + 1);
+		index = (index + replicaNum) % node_size;
 		//index = 0;
 		int portDiff = ConfHandler::getPortDiffFromConf();
 		ConfEntry ce = ConfHandler::NeighborVector.at(index);
