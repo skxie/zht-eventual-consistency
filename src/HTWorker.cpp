@@ -447,6 +447,9 @@ string HTWorker::lookup(ZPack &zpack) {
 			int versionNum = extract_versionnum(result_zpack);
 			if (versionNum != 0) {
 				//check versionnum with primary
+
+				cout << "version is not 0" << endl;
+
 				string msgFromPrimary;
 				string status = compare_versionnum_with_primary(zpack.key(), versionNum, msgFromPrimary);
 				if (status == Const::ZSC_REC_SUCC) {
@@ -467,6 +470,8 @@ string HTWorker::lookup(ZPack &zpack) {
 				}
 			} else {
 				//check the key-value pair with primary
+
+				cout << "version is 0" << endl;
 
 				string msgFromPrimay;
 				string status = check_exists_with_primary(zpack.key(), msgFromPrimay);
