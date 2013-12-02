@@ -68,7 +68,8 @@ HTWorker::QUEUE* HTWorker::PQUEUE = new QUEUE();
 bool HTWorker::INIT_SCCB_MUTEX = false;
 pthread_mutex_t HTWorker::SCCB_MUTEX;
 
-ProtoProxy* HTWorker::_proxy = NULL;
+bool HTWorker::INIT_PROXY = false;
+ProtoProxy* HTWorker::_PROXY = NULL;
 
 HTWorker::HTWorker() :
 		_stub(NULL), _instant_swap(get_instant_swap()) {
@@ -219,23 +220,11 @@ string HTWorker::check_exists_with_primary(const string &key, string &msgFromPri
 	//compare the zpack with versionnum with primary
 	ConfHandler::HIT primary = ConfHandler::ReplicaVector.begin();
 
-	cout << "check exist" << endl;
-	ConfHandler::HIT itself = ConfHandler::ReplicaVector.begin() + ConfHandler::REPLICA_VECTOR_POSITION;
-	cout << "send from " << itself->host << " " << itself->port << endl;
-	cout << "receiver " << primary->host << " " << primary->port << endl;
-
-	cout << "The whole replicaVector is" << endl;
-	int i = 0;
-	for (ConfHandler::HIT it = ConfHandler::ReplicaVector.begin(); it != ConfHandler::ReplicaVector.end(); it++) {
-		cout << "ReplicaVector " << i << ": " << it->host << " " << it->port << endl;
-		i++;
-	}
-
 	string msg = zpack.SerializeAsString();
 	char *buf = (char*) calloc(_msg_maxsize, sizeof(char));
 	size_t msz = _msg_maxsize;
 	/*send to and receive from*/
-	_proxy->sendrecv(*primary, msg.c_str(), msg.size(), buf, msz);
+	_PROXY->sendrecv(*primary, msg.c_str(), msg.size(), buf, msz);
 
 	/*...parse status and result*/
 	string sstatus;
@@ -275,23 +264,11 @@ string HTWorker::compare_versionnum_with_primary(const string &key, const int ve
 	//compare the zpack with versionnum with primary
 	ConfHandler::HIT primary = ConfHandler::ReplicaVector.begin();
 
-	cout << "compare version" << endl;
-	ConfHandler::HIT itself = ConfHandler::ReplicaVector.begin() + ConfHandler::REPLICA_VECTOR_POSITION;
-	cout << "send from " << itself->host << " " << itself->port << endl;
-	cout << "receiver " << primary->host << " " << primary->port << endl;
-
-	cout << "The whole replicaVector is" << endl;
-	int i = 0;
-	for (ConfHandler::HIT it = ConfHandler::ReplicaVector.begin(); it != ConfHandler::ReplicaVector.end(); it++) {
-		cout << "ReplicaVector " << i << ": " << it->host << " " << it->port << endl;
-		i++;
-	}
-
 	string msg = zpack.SerializeAsString();
 	char *buf = (char*) calloc(_msg_maxsize, sizeof(char));
 	size_t msz = _msg_maxsize;
 	/*send to and receive from*/
-	_proxy->sendrecv(*primary, msg.c_str(), msg.size(), buf, msz);
+	_PROXY->sendrecv(*primary, msg.c_str(), msg.size(), buf, msz);
 
 	/*...parse status and result*/
 	string sstatus;
@@ -342,8 +319,6 @@ string HTWorker::insert_shared(const ZPack &zpack) {
 string HTWorker::insert(const ZPack &zpack) {
 
 	string result = insert_shared(zpack);
-
-	cout << "The key used to insert is " << zpack.key() << endl;
 
 	if (ConfHandler::ZC_NUM_REPLICAS > 0 && result == Const::ZSC_REC_SUCC) {
 
@@ -444,8 +419,6 @@ string HTWorker::lookup(ZPack &zpack) {
 
 	string result = lookup_shared(zpack);
 
-	cout << "lookup the key is " << zpack.key() << endl;
-
 	if (ConfHandler::ZC_NUM_REPLICAS > 0) {
 		if (zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION != 0) {
 			string result_code = result.substr(0, 3);
@@ -453,8 +426,6 @@ string HTWorker::lookup(ZPack &zpack) {
 			int versionNum = extract_versionnum(result_zpack);
 			if (versionNum != 0) {
 				//check versionnum with primary
-
-				cout << "version is not 0" << endl;
 
 				string msgFromPrimary;
 				string status = compare_versionnum_with_primary(zpack.key(), versionNum, msgFromPrimary);
@@ -477,30 +448,20 @@ string HTWorker::lookup(ZPack &zpack) {
 			} else {
 				//check the key-value pair with primary
 
-				cout << "version is 0" << endl;
-
 				string msgFromPrimay;
 				string status = check_exists_with_primary(zpack.key(), msgFromPrimay);
 				if (status == Const::ZSC_REC_SUCC) {
-
-					cout << "exist in primary" << endl;
 
 					ZPack val;
 					val.ParseFromString(msgFromPrimay);
 					val.set_opcode(Const::ZSC_OPC_INSERT_SELF);
 
-					cout << "try to update itself" << endl;
-
 					result = insert_shared(val);
-
-					cout << "The update result is " << result << endl;
 
 					if (result == Const::ZSC_REC_SUCC) {
 						result.append(msgFromPrimay);
 					}
 				} else if (status == Const::ZSC_REC_NONEXISTKEY) {
-
-					cout << "not exists in primary" << endl;
 
 					result = Const::ZSC_REC_NONEXISTKEY;
 					result.append("Empty");
@@ -580,7 +541,7 @@ void HTWorker::strong_consistency(ZPack &zpack) {
 			size_t msz = _msg_maxsize;
 			for (ConfHandler::HIT iter = ConfHandler::ReplicaVector.begin() + 1; iter != ConfHandler::ReplicaVector.end(); iter++) {
 				/*send to and receive from*/
-				_proxy->sendrecv(*iter, msg.c_str(), msg.size(), buf, msz);
+				_PROXY->sendrecv(*iter, msg.c_str(), msg.size(), buf, msz);
 			}
 		}
 	}
@@ -593,7 +554,7 @@ void HTWorker::eventual_consistency(ZPack &zpack) {
 		if (zpack.opcode() == Const::ZSC_OPC_INSERT || zpack.opcode() == Const::ZSC_OPC_REMOVE || zpack.opcode() == Const::ZSC_OPC_APPEND) {
 
 			lock_guard lock(&SCCB_MUTEX);
-			WorkerThreadArg *wta = new WorkerThreadArg(zpack, _addr, _stub, _proxy, _msg_maxsize);
+			WorkerThreadArg *wta = new WorkerThreadArg(zpack, _addr, _stub, _PROXY, _msg_maxsize);
 			PQUEUE->push(wta); //queue the WorkerThreadArg to be used in thread function
 
 			pthread_t tid;
@@ -847,12 +808,17 @@ int HTWorker::init_proxy() {
 
 	_msg_maxsize = Env::get_msg_maxsize();
 
-	_proxy = ProxyStubFactory::createProxy();
+	if (!INIT_PROXY) {
 
-	if (_proxy == 0)
-		return -1;
-	else
-		return 0;
+		_PROXY = ProxyStubFactory::createProxy();
+
+		if (_PROXY == 0)
+			return -1;
+		else
+			return 0;
+
+		INIT_PROXY = true;
+	}
 }
 
 bool HTWorker::get_instant_swap() {
