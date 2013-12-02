@@ -810,14 +810,16 @@ int HTWorker::init_proxy() {
 
 	if (!INIT_PROXY) {
 
+		cout << "init proxy" << endl;
+
 		_PROXY = ProxyStubFactory::createProxy();
 
 		if (_PROXY == 0)
 			return -1;
-		else
+		else {
+			INIT_PROXY = true;
 			return 0;
-
-		INIT_PROXY = true;
+		}
 	}
 }
 
