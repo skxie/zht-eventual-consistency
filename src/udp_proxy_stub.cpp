@@ -82,7 +82,7 @@ bool UDPProxy::sendrecv(const void *sendbuf, const size_t sendcount,
 
 	/*get mutex to protected shared socket*/
 	pthread_mutex_t *sock_mutex = getSockMutex(he.host, he.port);
-	lock_guard lock(sock_mutex);
+	LockGuard lock(sock_mutex);
 
 
 	/*send message to server over client sock fd*/
@@ -221,7 +221,7 @@ int UDPProxy::getSockCached(const string& host, const uint& port) {
 
 	if (it == SOCK_CACHE.end()) {
 
-		lock_guard lock(&CC_MUTEX);
+		LockGuard lock(&CC_MUTEX);
 
 		sock = makeClientSocket(host, port);
 
@@ -258,7 +258,7 @@ sockaddr_in UDPProxy::getAddrCached(const string& host, const uint& port) {
 
 	if (it == ADDR_CACHE.end()) {
 
-		lock_guard lock(&AC_MUTEX);
+		LockGuard lock(&AC_MUTEX);
 
 		result = makeClientAddr(host, port);
 
