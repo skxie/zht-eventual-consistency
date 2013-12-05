@@ -125,7 +125,7 @@ private:
 private:
 	static bool INIT_PROXY;
 	static ProtoProxy *_PROXY;
-	int _msg_maxsize;
+	static int _MSG_MAXSIZE;
 
 private:
 	static NoVoHT *PMAP;

@@ -71,6 +71,8 @@ pthread_mutex_t HTWorker::SCCB_MUTEX;
 bool HTWorker::INIT_PROXY = false;
 ProtoProxy* HTWorker::_PROXY = NULL;
 
+int HTWorker::_MSG_MAXSIZE = Env::get_msg_maxsize();;
+
 HTWorker::HTWorker() :
 		_stub(NULL), _instant_swap(get_instant_swap()) {
 
@@ -221,8 +223,8 @@ string HTWorker::check_exists_with_primary(const string &key, string &msgFromPri
 	ConfHandler::HIT primary = ConfHandler::ReplicaVector.begin();
 
 	string msg = zpack.SerializeAsString();
-	char *buf = (char*) calloc(_msg_maxsize, sizeof(char));
-	size_t msz = _msg_maxsize;
+	char *buf = (char*) calloc(_MSG_MAXSIZE, sizeof(char));
+	size_t msz = _MSG_MAXSIZE;
 	/*send to and receive from*/
 	_PROXY->sendrecv(*primary, msg.c_str(), msg.size(), buf, msz);
 
@@ -265,8 +267,8 @@ string HTWorker::compare_versionnum_with_primary(const string &key, const int ve
 	ConfHandler::HIT primary = ConfHandler::ReplicaVector.begin();
 
 	string msg = zpack.SerializeAsString();
-	char *buf = (char*) calloc(_msg_maxsize, sizeof(char));
-	size_t msz = _msg_maxsize;
+	char *buf = (char*) calloc(_MSG_MAXSIZE, sizeof(char));
+	size_t msz = _MSG_MAXSIZE;
 	/*send to and receive from*/
 	_PROXY->sendrecv(*primary, msg.c_str(), msg.size(), buf, msz);
 
@@ -537,12 +539,13 @@ void HTWorker::strong_consistency(ZPack &zpack) {
 		if (zpack.opcode() == Const::ZSC_OPC_INSERT || zpack.opcode() == Const::ZSC_OPC_REMOVE || zpack.opcode() == Const::ZSC_OPC_APPEND) {
 			zpack.set_replicanum(Const::ZSI_REP_PRIM);
 			string msg = zpack.SerializeAsString();
-			char *buf = (char*) calloc(_msg_maxsize, sizeof(char));
-			size_t msz = _msg_maxsize;
+			char *buf = (char*) calloc(_MSG_MAXSIZE, sizeof(char));
+			size_t msz = _MSG_MAXSIZE;
 			for (ConfHandler::HIT iter = ConfHandler::ReplicaVector.begin() + 1; iter != ConfHandler::ReplicaVector.end(); iter++) {
 				/*send to and receive from*/
 				_PROXY->sendrecv(*iter, msg.c_str(), msg.size(), buf, msz);
 			}
+			free(buf);
 		}
 	}
 }
@@ -554,7 +557,7 @@ void HTWorker::eventual_consistency(ZPack &zpack) {
 		if (zpack.opcode() == Const::ZSC_OPC_INSERT || zpack.opcode() == Const::ZSC_OPC_REMOVE || zpack.opcode() == Const::ZSC_OPC_APPEND) {
 
 			lock_guard lock(&SCCB_MUTEX);
-			WorkerThreadArg *wta = new WorkerThreadArg(zpack, _addr, _stub, _PROXY, _msg_maxsize);
+			WorkerThreadArg *wta = new WorkerThreadArg(zpack, _addr, _stub, _PROXY, _MSG_MAXSIZE);
 			PQUEUE->push(wta); //queue the WorkerThreadArg to be used in thread function
 
 			pthread_t tid;
@@ -586,6 +589,7 @@ void *HTWorker::threaded_eventual_consistnecy(void *arg) {
 
 		pwta->_proxy->sendrecv(*receiver, msg.c_str(), msg.size(), buf, msz);
 
+		free(buf);
 		delete pwta;
 
 	}
@@ -806,11 +810,7 @@ void HTWorker::init_store() {
 
 int HTWorker::init_proxy() {
 
-	_msg_maxsize = Env::get_msg_maxsize();
-
 	if (!INIT_PROXY) {
-
-		cout << "init proxy" << endl;
 
 		_PROXY = ProxyStubFactory::createProxy();
 
