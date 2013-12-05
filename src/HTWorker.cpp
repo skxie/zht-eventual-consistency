@@ -71,7 +71,7 @@ pthread_mutex_t HTWorker::SCCB_MUTEX;
 bool HTWorker::INIT_PROXY = false;
 ProtoProxy* HTWorker::_PROXY = NULL;
 
-int HTWorker::_MSG_MAXSIZE = Env::get_msg_maxsize();;
+int HTWorker::_MSG_MAXSIZE = Env::get_msg_maxsize();
 
 HTWorker::HTWorker() :
 		_stub(NULL), _instant_swap(get_instant_swap()) {
@@ -403,7 +403,7 @@ string HTWorker::lookup_shared(const ZPack &zpack) {
 
 	if (ret == NULL) {
 
-		printf("thread[%lu] DB Error: lookup found nothing\n", pthread_self());
+		//printf("thread[%lu] DB Error: lookup found nothing\n", pthread_self());
 		fflush(stdout);
 
 		result = Const::ZSC_REC_NONEXISTKEY;
@@ -561,7 +561,12 @@ void HTWorker::eventual_consistency(ZPack &zpack) {
 			PQUEUE->push(wta); //queue the WorkerThreadArg to be used in thread function
 
 			pthread_t tid;
-			pthread_create(&tid, NULL, threaded_eventual_consistnecy, NULL);
+			pthread_attr_t attr;
+			int rc;
+
+			rc = pthread_attr_init(&attr);
+			rc = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+			rc = pthread_create(&tid, &attr, threaded_eventual_consistnecy, NULL);
 		}
 	}
 }
@@ -575,7 +580,7 @@ void *HTWorker::threaded_eventual_consistnecy(void *arg) {
 		WorkerThreadArg* pwta = PQUEUE->front();
 		PQUEUE->pop();
 
-		lock.unlock();
+		//lock.unlock();
 
 		if (ConfHandler::REPLICA_VECTOR_POSITION == 0)
 			pwta->_zpack.set_replicanum(Const::ZSI_REP_PRIM);
@@ -593,6 +598,8 @@ void *HTWorker::threaded_eventual_consistnecy(void *arg) {
 		delete pwta;
 
 	}
+
+	pthread_exit(NULL);
 
 }
 

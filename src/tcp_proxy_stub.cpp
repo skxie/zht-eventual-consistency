@@ -93,7 +93,6 @@ bool TCPProxy::sendrecv(const HostEntity &he, const void *sendbuf, const size_t 
 
 	/*get client sock fd*/
 	ZHTUtil zu;
-	string msg((char*) sendbuf, sendcount);
 
 	int sock = getSockCached(he.host, he.port);
 
