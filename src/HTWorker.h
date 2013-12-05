@@ -35,9 +35,13 @@
 #include "novoht.h"
 #include "proxy_stub.h"
 #include "ProxyStubFactory.h"
+#include "RateLimiter.h"
 #include <string>
 #include <queue>
 using namespace std;
+
+
+using namespace interview::inktank::q1;
 
 class HTWorker;
 
@@ -125,13 +129,16 @@ private:
 private:
 	static bool INIT_PROXY;
 	static ProtoProxy *_PROXY;
-	int _msg_maxsize;
+	static int _MSG_MAXSIZE;
+	static int _OPS_NUM;
+	static int _THREAD_NUM;
 
 private:
 	static NoVoHT *PMAP;
 	static QUEUE *PQUEUE;
 	static bool INIT_SCCB_MUTEX;
 	static pthread_mutex_t SCCB_MUTEX;
+	static RateLimiter *RATE_LIMITER;
 };
 
 #endif /* HTWORKER_H_ */

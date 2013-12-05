@@ -15,7 +15,7 @@ c_zhtclient_lanl_threaded: c_zhtclient_lanl_threaded.o c_zhtclient.o c_zhtclient
 Const.o ConfHandler.o ConfEntry.o \
 ProxyStubFactory.o proxy_stub.o ip_proxy_stub.o mq_proxy_stub.o ipc_plus.o tcp_proxy_stub.o udp_proxy_stub.o \
 ZHTUtil.o Env.o Util.o \
-HTWorker.o StrTokenizer.o
+HTWorker.o StrTokenizer.o Timer.o RateLimiterImpl.o
 	$(CC) $(CCFLAGS) -o $@ $^ $(LIBFLAGS)
 
 
@@ -23,7 +23,7 @@ c_zhtclient_threaded_test: c_zhtclient_threaded_test.o c_zhtclient.o c_zhtclient
 Const.o ConfHandler.o ConfEntry.o \
 ProxyStubFactory.o proxy_stub.o ip_proxy_stub.o mq_proxy_stub.o ipc_plus.o tcp_proxy_stub.o udp_proxy_stub.o \
 ZHTUtil.o Env.o Util.o \
-HTWorker.o StrTokenizer.o
+HTWorker.o StrTokenizer.o Timer.o RateLimiterImpl.o
 	$(CC) $(CCFLAGS) -o $@ $^ $(LIBFLAGS)
 
 
@@ -31,7 +31,7 @@ cpp_zhtclient_threaded_test: cpp_zhtclient_threaded_test.o lock_guard.o cpp_zhtc
 Const.o ConfHandler.o ConfEntry.o \
 ProxyStubFactory.o proxy_stub.o ip_proxy_stub.o mq_proxy_stub.o ipc_plus.o tcp_proxy_stub.o udp_proxy_stub.o \
 ZHTUtil.o Env.o Util.o \
-HTWorker.o StrTokenizer.o
+HTWorker.o StrTokenizer.o Timer.o RateLimiterImpl.o
 	$(CC) $(CCFLAGS) -o $@ $^ $(LIBFLAGS)
 
 
@@ -40,14 +40,14 @@ zht_ctest: c_zhtclient_test.o c_zhtclient.o c_zhtclientStd.o lock_guard.o cpp_zh
 Const.o ConfHandler.o ConfEntry.o \
 ProxyStubFactory.o proxy_stub.o ip_proxy_stub.o mq_proxy_stub.o ipc_plus.o tcp_proxy_stub.o udp_proxy_stub.o \
 ZHTUtil.o Env.o Util.o \
-HTWorker.o StrTokenizer.o
+HTWorker.o StrTokenizer.o Timer.o RateLimiterImpl.o
 	$(CC) $(CCFLAGS) -o $@ $^ $(LIBFLAGS)
 
 zht_cpptest: cpp_zhtclient_test.o lock_guard.o cpp_zhtclient.o meta.pb-c.o lru_cache.o meta.pb.o zpack.pb.o novoht.o bigdata_transfer.o\
 Const.o ConfHandler.o ConfEntry.o \
 ProxyStubFactory.o proxy_stub.o ip_proxy_stub.o mq_proxy_stub.o ipc_plus.o tcp_proxy_stub.o udp_proxy_stub.o \
 ZHTUtil.o Env.o Util.o \
-HTWorker.o StrTokenizer.o
+HTWorker.o StrTokenizer.o Timer.o RateLimiterImpl.o
 	$(CC) $(CCFLAGS) -o $@ $^ $(LIBFLAGS)
 	
 
@@ -55,7 +55,7 @@ zht_ben: benchmark_client.o lock_guard.o cpp_zhtclient.o meta.pb-c.o lru_cache.o
 Const.o ConfHandler.o ConfEntry.o \
 ProxyStubFactory.o proxy_stub.o ip_proxy_stub.o mq_proxy_stub.o ipc_plus.o tcp_proxy_stub.o udp_proxy_stub.o \
 ZHTUtil.o Env.o Util.o \
-HTWorker.o StrTokenizer.o
+HTWorker.o StrTokenizer.o Timer.o RateLimiterImpl.o
 	$(CC) $(CCFLAGS) -o $@ $^ $(LIBFLAGS)
 	
 
@@ -63,14 +63,14 @@ even_client_test: even_client_test.o lock_guard.o cpp_zhtclient.o meta.pb-c.o lr
 Const.o ConfHandler.o ConfEntry.o \
 ProxyStubFactory.o proxy_stub.o ip_proxy_stub.o mq_proxy_stub.o ipc_plus.o tcp_proxy_stub.o udp_proxy_stub.o \
 ZHTUtil.o Env.o Util.o \
-HTWorker.o StrTokenizer.o
+HTWorker.o StrTokenizer.o Timer.o RateLimiterImpl.o
 	$(CC) $(CCFLAGS) -o $@ $^ $(LIBFLAGS)
 	
 even_test: even_test.o lock_guard.o cpp_zhtclient.o meta.pb-c.o lru_cache.o meta.pb.o zpack.pb.o novoht.o bigdata_transfer.o\
 Const.o ConfHandler.o ConfEntry.o \
 ProxyStubFactory.o proxy_stub.o ip_proxy_stub.o mq_proxy_stub.o ipc_plus.o tcp_proxy_stub.o udp_proxy_stub.o \
 ZHTUtil.o Env.o Util.o \
-HTWorker.o StrTokenizer.o
+HTWorker.o StrTokenizer.o Timer.o RateLimiterImpl.o
 	$(CC) $(CCFLAGS) -o $@ $^ $(LIBFLAGS)
 
 
@@ -78,7 +78,7 @@ zhtserver: ZHTServer.o lock_guard.o meta.pb-c.o lru_cache.o meta.pb.o zpack.pb.o
 Const.o ConfHandler.o ConfEntry.o \
 ProxyStubFactory.o proxy_stub.o ip_proxy_stub.o mq_proxy_stub.o ipc_plus.o tcp_proxy_stub.o udp_proxy_stub.o \
 ZHTUtil.o Env.o Util.o StrTokenizer.o\
-EpollServer.o ZProcessor.o ip_server.o HTWorker.o StrTokenizer.o
+EpollServer.o ZProcessor.o ip_server.o HTWorker.o StrTokenizer.o Timer.o RateLimiterImpl.o
 	$(CC) $(CCFLAGS) -o $@ $^ $(LIBFLAGS)
 
 
