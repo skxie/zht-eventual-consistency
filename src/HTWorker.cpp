@@ -72,6 +72,7 @@ bool HTWorker::INIT_PROXY = false;
 ProtoProxy* HTWorker::_PROXY = NULL;
 
 int HTWorker::_MSG_MAXSIZE = Env::get_msg_maxsize();
+bool HTWorker::FIRST_ASYNC = false;
 
 HTWorker::HTWorker() :
 		_stub(NULL), _instant_swap(get_instant_swap()) {
@@ -560,13 +561,18 @@ void HTWorker::eventual_consistency(ZPack &zpack) {
 			WorkerThreadArg *wta = new WorkerThreadArg(zpack, _addr, _stub, _PROXY, _MSG_MAXSIZE);
 			PQUEUE->push(wta); //queue the WorkerThreadArg to be used in thread function
 
-			pthread_t tid;
-			pthread_attr_t attr;
-			int rc;
 
-			rc = pthread_attr_init(&attr);
-			rc = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-			rc = pthread_create(&tid, &attr, threaded_eventual_consistnecy, NULL);
+			if (!FIRST_ASYNC) {
+				pthread_t tid;
+				pthread_attr_t attr;
+				int rc;
+
+				rc = pthread_attr_init(&attr);
+				rc = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+				rc = pthread_create(&tid, &attr, threaded_eventual_consistnecy, NULL);
+
+				FIRST_ASYNC = true;
+			}
 		}
 	}
 }
@@ -584,22 +590,26 @@ void *HTWorker::threaded_eventual_consistnecy(void *arg) {
 		//lock.unlock();
 	*/
 	WorkerThreadArg* pwta = NULL;
-	if (PQUEUE->pop(pwta)) {
-		if (ConfHandler::REPLICA_VECTOR_POSITION == 0)
-			pwta->_zpack.set_replicanum(Const::ZSI_REP_PRIM);
-		else
-			pwta->_zpack.set_replicanum(Const::ZSI_REP_REPLICA);
+	while (true) {
+		while (PQUEUE->pop(pwta)) {
+			if (ConfHandler::REPLICA_VECTOR_POSITION == 0)
+				pwta->_zpack.set_replicanum(Const::ZSI_REP_PRIM);
+			else
+				pwta->_zpack.set_replicanum(Const::ZSI_REP_REPLICA);
 
-		ConfHandler::HIT receiver = ConfHandler::ReplicaVector.begin() + ConfHandler::REPLICA_VECTOR_POSITION + 1;
-		string msg = pwta->_zpack.SerializeAsString();
-		char *buf = (char*) calloc(pwta->_msg_maxsize, sizeof(char));
-		size_t msz =pwta-> _msg_maxsize;
+			ConfHandler::HIT receiver = ConfHandler::ReplicaVector.begin()
+					+ ConfHandler::REPLICA_VECTOR_POSITION + 1;
+			string msg = pwta->_zpack.SerializeAsString();
+			char *buf = (char*) calloc(pwta->_msg_maxsize, sizeof(char));
+			size_t msz = pwta->_msg_maxsize;
 
-		pwta->_proxy->sendrecv(*receiver, msg.c_str(), msg.size(), buf, msz);
+			pwta->_proxy->sendrecv(*receiver, msg.c_str(), msg.size(), buf,
+					msz);
 
-		free(buf);
-		delete pwta;
-
+			free(buf);
+			delete pwta;
+			pwta = NULL;
+		}
 	}
 
 	pthread_exit(NULL);
