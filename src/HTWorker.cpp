@@ -32,7 +32,7 @@
 
 #include "Const-impl.h"
 #include "Env.h"
-#include "lock_guard.h"
+//#include "lock_guard.h"
 #include "ConfHandler.h"
 #include "StrTokenizer.h"
 
@@ -65,8 +65,8 @@ NoVoHT* HTWorker::PMAP = NULL;
 
 HTWorker::QUEUE* HTWorker::PQUEUE = new QUEUE();
 
-bool HTWorker::INIT_SCCB_MUTEX = false;
-pthread_mutex_t HTWorker::SCCB_MUTEX;
+//bool HTWorker::INIT_SCCB_MUTEX = false;
+//pthread_mutex_t HTWorker::SCCB_MUTEX;
 
 bool HTWorker::INIT_PROXY = false;
 ProtoProxy* HTWorker::_PROXY = NULL;
@@ -78,7 +78,7 @@ HTWorker::HTWorker() :
 
 	init_store();
 
-	init_sscb_mutex();
+	//init_sscb_mutex();
 
 	init_proxy();
 }
@@ -88,7 +88,7 @@ HTWorker::HTWorker(const ProtoAddr& addr, const ProtoStub* const stub) :
 
 	init_store();
 
-	init_sscb_mutex();
+	//init_sscb_mutex();
 
 	init_proxy();
 }
@@ -556,7 +556,7 @@ void HTWorker::eventual_consistency(ZPack &zpack) {
 
 		if (zpack.opcode() == Const::ZSC_OPC_INSERT || zpack.opcode() == Const::ZSC_OPC_REMOVE || zpack.opcode() == Const::ZSC_OPC_APPEND) {
 
-			lock_guard lock(&SCCB_MUTEX);
+			//lock_guard lock(&SCCB_MUTEX);
 			WorkerThreadArg *wta = new WorkerThreadArg(zpack, _addr, _stub, _PROXY, _MSG_MAXSIZE);
 			PQUEUE->push(wta); //queue the WorkerThreadArg to be used in thread function
 
@@ -573,6 +573,7 @@ void HTWorker::eventual_consistency(ZPack &zpack) {
 
 void *HTWorker::threaded_eventual_consistnecy(void *arg) {
 
+	/*
 	lock_guard lock(&SCCB_MUTEX);
 
 	if (!PQUEUE->empty()) { //dequeue the WorkerThreadArg
@@ -581,7 +582,9 @@ void *HTWorker::threaded_eventual_consistnecy(void *arg) {
 		PQUEUE->pop();
 
 		//lock.unlock();
-
+	*/
+	WorkerThreadArg* pwta = NULL;
+	if (PQUEUE->pop(pwta)) {
 		if (ConfHandler::REPLICA_VECTOR_POSITION == 0)
 			pwta->_zpack.set_replicanum(Const::ZSI_REP_PRIM);
 		else
@@ -606,7 +609,7 @@ void *HTWorker::threaded_eventual_consistnecy(void *arg) {
 
 string HTWorker::state_change_callback(const ZPack &zpack) {
 
-	lock_guard lock(&SCCB_MUTEX);
+	//lock_guard lock(&SCCB_MUTEX);
 	WorkerThreadArg *wta = new WorkerThreadArg(zpack, _addr, _stub);
 	PQUEUE->push(wta); //queue the WorkerThreadArg to be used in thread function
 
@@ -618,6 +621,7 @@ string HTWorker::state_change_callback(const ZPack &zpack) {
 
 void *HTWorker::threaded_state_change_callback(void *arg) {
 
+	/*
 	lock_guard lock(&SCCB_MUTEX);
 
 	if (!PQUEUE->empty()) { //dequeue the WorkerThreadArg
@@ -626,6 +630,9 @@ void *HTWorker::threaded_state_change_callback(void *arg) {
 		PQUEUE->pop();
 
 		lock.unlock();
+	*/
+	WorkerThreadArg* pwta = NULL;
+	if (PQUEUE->pop(pwta)) {
 
 		string result = state_change_callback_internal(pwta->_zpack);
 
@@ -795,14 +802,14 @@ string HTWorker::erase_status_code(string & val) {
 	return val.substr(3);
 }
 
-void HTWorker::init_sscb_mutex() {
-
-	if (!INIT_SCCB_MUTEX) {
-
-		pthread_mutex_init(&SCCB_MUTEX, NULL);
-		INIT_SCCB_MUTEX = true;
-	}
-}
+//void HTWorker::init_sscb_mutex() {
+//
+//	if (!INIT_SCCB_MUTEX) {
+//
+//		pthread_mutex_init(&SCCB_MUTEX, NULL);
+//		INIT_SCCB_MUTEX = true;
+//	}
+//}
 
 string HTWorker::get_novoht_file() {
 
