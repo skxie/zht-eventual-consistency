@@ -37,7 +37,10 @@
 #include "ProxyStubFactory.h"
 #include <string>
 #include <queue>
+#include "TSafeQueue-impl.h"
+
 using namespace std;
+using namespace iit::cs550::finalproj;
 
 class HTWorker;
 
@@ -62,7 +65,7 @@ public:
  */
 class HTWorker {
 public:
-	typedef queue<WorkerThreadArg*> QUEUE;
+	typedef TSafeQueue<WorkerThreadArg*> QUEUE;
 
 public:
 	HTWorker();
@@ -108,8 +111,8 @@ private:
 	void init_store();
 	bool get_instant_swap();
 
-private:
-	static void init_sscb_mutex();
+//private:
+//	static void init_sscb_mutex();
 
 private:
 	int init_proxy();
@@ -130,8 +133,9 @@ private:
 private:
 	static NoVoHT *PMAP;
 	static QUEUE *PQUEUE;
-	static bool INIT_SCCB_MUTEX;
-	static pthread_mutex_t SCCB_MUTEX;
+	static bool FIRST_ASYNC;
+//	static bool INIT_SCCB_MUTEX;
+//	static pthread_mutex_t SCCB_MUTEX;
 };
 
 #endif /* HTWORKER_H_ */
