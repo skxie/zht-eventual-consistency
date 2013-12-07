@@ -325,12 +325,16 @@ string HTWorker::insert(const ZPack &zpack) {
 
 	if (ConfHandler::ZC_NUM_REPLICAS > 0 && result == Const::ZSC_REC_SUCC) {
 
-		ZPack msg = zpack;
-		//strong consistency
-		//strong_consistency(msg);
-
-		//eventual consistency
-		eventual_consistency(msg);
+		if (ConfHandler::ZC_NUM_REPLICAS > 0) {
+			ZPack msg = zpack;
+			if (zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
+				//strong_consistency(msg);
+				strong_consistency_primary_replica(msg);
+			} else {
+				//eventual consistency
+				eventual_consistency(msg);
+			}
+		}
 	}
 
 #ifdef SCCB
@@ -515,14 +519,18 @@ string HTWorker::append(const ZPack &zpack) {
 
 	string result = append_shared(zpack);
 
-	if (ConfHandler::ZC_NUM_REPLICAS != 0 && result == Const::ZSC_REC_SUCC) {
+	if (ConfHandler::ZC_NUM_REPLICAS > 0 && result == Const::ZSC_REC_SUCC) {
 
-		ZPack msg = zpack;
-		//strong consistency
-		//strong_consistency(msg);
-
-		//eventual consistency
-		eventual_consistency(msg);
+		if (ConfHandler::ZC_NUM_REPLICAS > 0) {
+			ZPack msg = zpack;
+			if (zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
+				//strong_consistency(msg);
+				strong_consistency_primary_replica(msg);
+			} else {
+				//eventual consistency
+				eventual_consistency(msg);
+			}
+		}
 	}
 
 #ifdef SCCB
@@ -531,6 +539,23 @@ string HTWorker::append(const ZPack &zpack) {
 #else
 	return result;
 #endif
+}
+
+void HTWorker::strong_consistency_primary_replica(ZPack &zpack) {
+
+	if (ConfHandler::ZC_NUM_REPLICAS > 0 && zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
+
+		if (zpack.opcode() == Const::ZSC_OPC_INSERT || zpack.opcode() == Const::ZSC_OPC_REMOVE || zpack.opcode() == Const::ZSC_OPC_APPEND) {
+			zpack.set_replicanum(Const::ZSI_REP_PRIM);
+			string msg = zpack.SerializeAsString();
+			char *buf = (char*) calloc(_MSG_MAXSIZE, sizeof(char));
+			size_t msz = _MSG_MAXSIZE;
+			ConfHandler::HIT receiver = ConfHandler::ReplicaVector.begin() + 1;
+			/*send to and receive from*/
+			_PROXY->sendrecv(*receiver, msg.c_str(), msg.size(), buf, msz);
+			free(buf);
+		}
+	}
 }
 
 void HTWorker::strong_consistency(ZPack &zpack) {
@@ -789,14 +814,18 @@ string HTWorker::remove(const ZPack &zpack) {
 
 	string result = remove_shared(zpack);
 
-	if (ConfHandler::ZC_NUM_REPLICAS != 0 && result == Const::ZSC_REC_SUCC) {
+	if (ConfHandler::ZC_NUM_REPLICAS > 0 && result == Const::ZSC_REC_SUCC) {
 
-		ZPack msg = zpack;
-		//strong consistency
-		//strong_consistency(msg);
-
-		//eventual consistency
-		eventual_consistency(msg);
+		if (ConfHandler::ZC_NUM_REPLICAS > 0) {
+			ZPack msg = zpack;
+			if (zpack.replicanum() == Const::ZSI_REP_ORIG && ConfHandler::REPLICA_VECTOR_POSITION == 0) {
+				//strong_consistency(msg);
+				strong_consistency_primary_replica(msg);
+			} else {
+				//eventual consistency
+				eventual_consistency(msg);
+			}
+		}
 	}
 
 #ifdef SCCB

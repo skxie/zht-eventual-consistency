@@ -116,6 +116,7 @@ private:
 
 private:
 	int init_proxy();
+	void strong_consistency_primary_replica(ZPack &zpack);
 	void strong_consistency(ZPack &zpack);
 	void eventual_consistency(ZPack &zpack);
 	static void *threaded_eventual_consistnecy(void *arg);
